@@ -15,8 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Grab login form and links
-const loginForm = document.getElementById('loginForm');
+// Grab login card and links
 const loginCard = document.querySelector('.login-card');
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
@@ -53,7 +52,7 @@ loginCard.insertBefore(forgotForm, linksDiv);
 
 // --- Toggle forms ---
 function showForm(formType) {
-  loginForm.style.display = formType === 'login' ? 'flex' : 'none';
+  document.getElementById('loginForm').style.display = formType === 'login' ? 'flex' : 'none';
   signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
   forgotForm.style.display = formType === 'forgot' ? 'flex' : 'none';
 }
@@ -71,11 +70,11 @@ document.addEventListener('click', e => {
 });
 
 // --- Firebase Login ---
+const loginForm = document.getElementById('loginForm');
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-
   if (!email || !password) return alert('Enter email and password');
 
   signInWithEmailAndPassword(auth, email, password)
@@ -91,13 +90,12 @@ signupForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value;
   const password = document.getElementById('signupPassword').value;
-
   if (!email || !password) return alert('Enter email and password');
 
   createUserWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert('Account created! You can now login.');
-      showForm('login');
+    .then(() => { 
+      alert('Account created! You can now login.'); 
+      showForm('login'); 
     })
     .catch(error => alert(error.message));
 });
@@ -106,7 +104,6 @@ signupForm.addEventListener('submit', e => {
 forgotForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value;
-
   if (!email) return alert('Enter your email');
 
   sendPasswordResetEmail(auth, email)
