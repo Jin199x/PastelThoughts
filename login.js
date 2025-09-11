@@ -15,53 +15,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Grab login card and links
-const loginCard = document.querySelector('.login-card');
+// --- Grab all forms ---
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+const forgotForm = document.getElementById('forgotForm');
+
+// --- Grab all links ---
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
 
-// --- Create Signup Form dynamically ---
-const signupForm = document.createElement('form');
-signupForm.id = 'signupForm';
-signupForm.style.display = 'none';
-signupForm.style.flexDirection = 'column';
-signupForm.style.gap = '15px';
-signupForm.innerHTML = `
-  <input type="email" id="signupEmail" placeholder="Email" required>
-  <input type="password" id="signupPassword" placeholder="Password" required>
-  <button type="submit">Create Account</button>
-  <a href="#" id="backFromSignup">Back to Login</a>
-`;
-
-// --- Create Forgot Password Form dynamically ---
-const forgotForm = document.createElement('form');
-forgotForm.id = 'forgotForm';
-forgotForm.style.display = 'none';
-forgotForm.style.flexDirection = 'column';
-forgotForm.style.gap = '15px';
-forgotForm.innerHTML = `
-  <input type="email" id="forgotEmail" placeholder="Email" required>
-  <button type="submit">Send Reset Link</button>
-  <a href="#" id="backFromForgot">Back to Login</a>
-`;
-
-// Insert forms before links
-const linksDiv = document.querySelector('.links');
-loginCard.insertBefore(signupForm, linksDiv);
-loginCard.insertBefore(forgotForm, linksDiv);
-
-// --- Toggle forms ---
+// --- Toggle forms function ---
 function showForm(formType) {
-  document.getElementById('loginForm').style.display = formType === 'login' ? 'flex' : 'none';
+  loginForm.style.display = formType === 'login' ? 'flex' : 'none';
   signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
   forgotForm.style.display = formType === 'forgot' ? 'flex' : 'none';
 }
 
-// --- Link Events ---
+// --- Links events ---
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
 
-// --- Back links ---
+// --- Back links inside forms ---
 document.addEventListener('click', e => {
   if (e.target.id === 'backFromSignup' || e.target.id === 'backFromForgot') {
     e.preventDefault();
@@ -70,16 +44,15 @@ document.addEventListener('click', e => {
 });
 
 // --- Firebase Login ---
-const loginForm = document.getElementById('loginForm');
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
+
   if (!email || !password) return alert('Enter email and password');
 
   signInWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
-      console.log('Logged in user:', userCredential.user.uid);
       window.location.href = 'diary.html';
     })
     .catch(error => alert(error.message));
@@ -90,12 +63,13 @@ signupForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value;
   const password = document.getElementById('signupPassword').value;
+
   if (!email || !password) return alert('Enter email and password');
 
   createUserWithEmailAndPassword(auth, email, password)
-    .then(() => { 
-      alert('Account created! You can now login.'); 
-      showForm('login'); 
+    .then(() => {
+      alert('Account created! You can now login.');
+      showForm('login');
     })
     .catch(error => alert(error.message));
 });
@@ -104,6 +78,7 @@ signupForm.addEventListener('submit', e => {
 forgotForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value;
+
   if (!email) return alert('Enter your email');
 
   sendPasswordResetEmail(auth, email)
