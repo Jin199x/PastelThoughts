@@ -103,11 +103,11 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     const newText = document.getElementById('editPastEntry').value;
     if (!newText) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(dateKey, newText);
-    renderPastEntries();
-    renderExportList();
-    renderCalendar(currentDate);
     alert("Entry saved!");
-    //hideAllSections();
+    renderPastEntries();
+    renderCalendar(currentDate);
+    renderExportList();
+    hideAllSections();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
   };
@@ -117,8 +117,8 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     await deleteEntryFromFirebase(dateKey);
     renderPastEntries();
     renderCalendar(currentDate);
-    //hideAllSections();
     renderExportList();
+    hideAllSections();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
   };
@@ -134,8 +134,9 @@ saveBtn.onclick = async () => {
   editorTextarea.value = "";
   alert("Entry saved!");
   renderPastEntries();
-  renderExportList();
   renderCalendar(currentDate);
+  renderExportList();
+  
   
 };
 
@@ -195,12 +196,12 @@ function showCalendarEntry(key, day, month, year) {
     const text = document.getElementById("newCalendarEntry").value;
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
+    alert("Entry saved!");
     renderPastEntries();
-    renderExportList();
     renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
     calendarEntry.style.display = "none";
-    alert("Entry saved!");
+    renderExportList();
   };
 
   // Edit existing entry
@@ -220,12 +221,12 @@ function showCalendarEntry(key, day, month, year) {
       const newText = document.getElementById("editEntryTextarea").value;
       if (!newText) return alert("Cannot save empty entry!");
       await saveEntryToFirebase(key, newText);
+      alert("Entry updated!");
       renderPastEntries();
-      renderExportList();
       renderCalendar(currentDate);
       showCalendarEntry(key, day, month, year);
       calendarEntry.style.display = "none";
-      alert("Entry updated!");
+      renderExportList();
     };
 
     document.getElementById("cancelEditBtn").onclick = () => {
@@ -239,9 +240,9 @@ function showCalendarEntry(key, day, month, year) {
     if (!confirm("Are you sure you want to delete this entry?")) return;
     await deleteEntryFromFirebase(key);
     renderPastEntries();
-    renderExportList?.();
     renderCalendar(currentDate);
     calendarEntry.style.display = "none";
+    renderExportList();
   };
 }
 
@@ -284,6 +285,7 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
 
