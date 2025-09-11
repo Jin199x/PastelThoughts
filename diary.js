@@ -104,12 +104,12 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     if (!newText) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(dateKey, newText);
     renderPastEntries();
-    renderCalendar(currentDate);
-    hideAllSections();
     renderExportList();
+    renderCalendar(currentDate);
+    alert("Entry saved!");
+    //hideAllSections();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
-    alert("Entry saved!");
   };
 
   deleteBtn.onclick = async () => {
@@ -117,7 +117,7 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     await deleteEntryFromFirebase(dateKey);
     renderPastEntries();
     renderCalendar(currentDate);
-    hideAllSections();
+    //hideAllSections();
     renderExportList();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
@@ -132,10 +132,11 @@ saveBtn.onclick = async () => {
 
   await saveEntryToFirebase(todayKey, text);
   editorTextarea.value = "";
+  alert("Entry saved!");
   renderPastEntries();
   renderExportList();
   renderCalendar(currentDate);
-  alert("Entry saved!");
+  
 };
 
 // ====== Calendar ======
@@ -283,6 +284,7 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
 
