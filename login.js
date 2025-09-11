@@ -15,6 +15,29 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+const loginForm = document.getElementById('loginForm');
+
+loginForm.addEventListener('submit', e => {
+  e.preventDefault();
+
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+
+  if (!emailInput || !passwordInput) return alert('Login fields not found!');
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  if (!email || !password) return alert('Enter email and password');
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      console.log('Logged in user:', userCredential.user.uid);
+      window.location.href = 'diary.html';
+    })
+    .catch(error => alert(error.message));
+});
+
 // Grab login card and links
 const loginCard = document.querySelector('.login-card');
 const showSignup = document.getElementById('showSignup');
