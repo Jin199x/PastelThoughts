@@ -132,13 +132,26 @@ function renderPastEntries() {
 saveBtn.onclick = async () => {
   const text = editorTextarea.value;
   if (!text) return alert("Please write something before saving.");
+
   const todayKey = new Date().toISOString().split('T')[0];
-  await saveEntryToFirebase(todayKey, text);
-  editorTextarea.value = "";
-  renderPastEntries();
-  renderCalendar(currentDate);
-  alert("Entry saved!");
-  if (typeof renderExportList === 'function') renderExportList();
+
+  try {
+    await saveEntryToFirebase(todayKey, text); // save to Firebase first
+    editorTextarea.value = "";
+
+    // Make sure entries object is up-to-date
+    entries[todayKey] = text;
+
+    // Now render
+    renderPastEntries();
+    renderCalendar(currentDate);
+
+    alert("Entry saved!");
+    if (typeof renderExportList === 'function') renderExportList();
+  } catch (err) {
+    console.error("Error saving entry:", err);
+    alert("Failed to save entry. Try again.");
+  }
 };
 
 // ====== Back Button ======
@@ -202,6 +215,10 @@ function showCalendarEntry(key, day, month, year) {
     const text = document.getElementById("newCalendarEntry").value;
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
+
+    // Update entries object for Past Entries rendering
+    entries[key] = text;
+
     renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
     renderPastEntries();
@@ -213,6 +230,9 @@ function showCalendarEntry(key, day, month, year) {
     const newText = document.getElementById("editEntryTextarea").value;
     if (!newText) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, newText);
+
+    entries[key] = newText; // ensure Past Entries is updated
+
     renderCalendar(currentDate);
     renderPastEntries();
     alert("Entry updated!");
@@ -271,4 +291,3 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
-
