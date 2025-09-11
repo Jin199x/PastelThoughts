@@ -15,41 +15,54 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Grab forms and links
+// Grab login form and links
 const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
-const forgotForm = document.getElementById('forgotForm');
+const loginCard = document.querySelector('.login-card');
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
 
-// --- Toggle forms (preserve original layout)
+// --- Create Signup Form dynamically ---
+const signupForm = document.createElement('form');
+signupForm.id = 'signupForm';
+signupForm.style.display = 'none';
+signupForm.style.flexDirection = 'column';
+signupForm.style.gap = '15px';
+signupForm.innerHTML = `
+  <input type="email" id="signupEmail" placeholder="Email" required>
+  <input type="password" id="signupPassword" placeholder="Password" required>
+  <button type="submit">Create Account</button>
+  <a href="#" id="backFromSignup">Back to Login</a>
+`;
+
+// --- Create Forgot Password Form dynamically ---
+const forgotForm = document.createElement('form');
+forgotForm.id = 'forgotForm';
+forgotForm.style.display = 'none';
+forgotForm.style.flexDirection = 'column';
+forgotForm.style.gap = '15px';
+forgotForm.innerHTML = `
+  <input type="email" id="forgotEmail" placeholder="Email" required>
+  <button type="submit">Send Reset Link</button>
+  <a href="#" id="backFromForgot">Back to Login</a>
+`;
+
+// Insert forms before links
+const linksDiv = document.querySelector('.links');
+loginCard.insertBefore(signupForm, linksDiv);
+loginCard.insertBefore(forgotForm, linksDiv);
+
+// --- Toggle forms ---
 function showForm(formType) {
   loginForm.style.display = formType === 'login' ? 'flex' : 'none';
   signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
   forgotForm.style.display = formType === 'forgot' ? 'flex' : 'none';
 }
 
-// --- Link events ---
+// --- Link Events ---
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
 
-// --- Back links inside HTML forms ---
-const backSignup = document.createElement('a');
-backSignup.href = "#";
-backSignup.textContent = "Back to Login";
-backSignup.id = "backFromSignup";
-backSignup.style.display = "block";
-backSignup.style.marginTop = "10px";
-signupForm.appendChild(backSignup);
-
-const backForgot = document.createElement('a');
-backForgot.href = "#";
-backForgot.textContent = "Back to Login";
-backForgot.id = "backFromForgot";
-backForgot.style.display = "block";
-backForgot.style.marginTop = "10px";
-forgotForm.appendChild(backForgot);
-
+// --- Back links ---
 document.addEventListener('click', e => {
   if (e.target.id === 'backFromSignup' || e.target.id === 'backFromForgot') {
     e.preventDefault();
@@ -62,6 +75,7 @@ loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
+
   if (!email || !password) return alert('Enter email and password');
 
   signInWithEmailAndPassword(auth, email, password)
@@ -77,6 +91,7 @@ signupForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value;
   const password = document.getElementById('signupPassword').value;
+
   if (!email || !password) return alert('Enter email and password');
 
   createUserWithEmailAndPassword(auth, email, password)
@@ -91,6 +106,7 @@ signupForm.addEventListener('submit', e => {
 forgotForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value;
+
   if (!email) return alert('Enter your email');
 
   sendPasswordResetEmail(auth, email)
