@@ -1,7 +1,7 @@
 // ====== Firebase Setup ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
@@ -52,9 +52,10 @@ async function loadEntries() {
   } else {
     entries = {};
   }
+  window.entries = entries; // Sync global for profile.js
   renderPastEntries();
   renderCalendar(currentDate);
-  renderExportList(); // Assuming you already have this function in profile.js
+  if (typeof renderExportList === 'function') renderExportList();
 }
 
 // ====== Save Entry to Firestore ======
@@ -62,6 +63,7 @@ async function saveEntryToFirebase(dateKey, text) {
   entries[dateKey] = text;
   const docRef = doc(db, "users", currentUser.uid);
   await setDoc(docRef, { entries }, { merge: true });
+  window.entries = entries; // Sync global
 }
 
 // ====== Delete Entry from Firestore ======
@@ -69,6 +71,7 @@ async function deleteEntryFromFirebase(dateKey) {
   delete entries[dateKey];
   const docRef = doc(db, "users", currentUser.uid);
   await setDoc(docRef, { entries }, { merge: true });
+  window.entries = entries; // Sync global
 }
 
 // ====== Render Past Entries ======
@@ -87,7 +90,7 @@ function renderPastEntries() {
     card.dataset.text = entryValue;
     card.innerHTML = `<strong>${displayDate}</strong><p>${entryValue}</p>`;
 
-    card.addEventListener('click', () => {
+    card.onclick = () => { // Use onclick to avoid multiple listeners
       hideAllSections();
       fullEntry.style.display = 'flex';
       entryDate.textContent = displayDate;
@@ -99,7 +102,10 @@ function renderPastEntries() {
         </div>
       `;
 
-      document.getElementById('savePastEditBtn').addEventListener('click', async () => {
+      const savePastEditBtn = document.getElementById('savePastEditBtn');
+      const deletePastEntryBtn = document.getElementById('deletePastEntryBtn');
+
+      savePastEditBtn.onclick = async () => {
         const newText = document.getElementById('editPastEntry').value;
         if (!newText) return alert("Cannot save empty entry!");
         await saveEntryToFirebase(dateKey, newText);
@@ -109,10 +115,10 @@ function renderPastEntries() {
         hideAllSections();
         timeline.style.display = 'flex';
         document.getElementById('editor').style.display = 'flex';
-        renderExportList();
-      });
+        if (typeof renderExportList === 'function') renderExportList();
+      };
 
-      document.getElementById('deletePastEntryBtn').addEventListener('click', async () => {
+      deletePastEntryBtn.onclick = async () => {
         if (confirm("Are you sure you want to delete this entry?")) {
           await deleteEntryFromFirebase(dateKey);
           renderPastEntries();
@@ -120,17 +126,17 @@ function renderPastEntries() {
           hideAllSections();
           timeline.style.display = 'flex';
           document.getElementById('editor').style.display = 'flex';
-          renderExportList();
+          if (typeof renderExportList === 'function') renderExportList();
         }
-      });
-    });
+      };
+    };
 
     timeline.appendChild(card);
   });
 }
 
 // ====== Save Today's Entry ======
-saveBtn.addEventListener('click', async () => {
+saveBtn.onclick = async () => {
   const text = editorTextarea.value;
   if (!text) return alert("Please write something before saving.");
 
@@ -141,15 +147,15 @@ saveBtn.addEventListener('click', async () => {
   renderPastEntries();
   renderCalendar(currentDate);
   alert("Entry saved!");
-  renderExportList();
-});
+  if (typeof renderExportList === 'function') renderExportList();
+};
 
 // ====== Back Button ======
-backBtn.addEventListener('click', () => {
+backBtn.onclick = () => {
   hideAllSections();
   timeline.style.display = 'flex';
   document.getElementById('editor').style.display = 'flex';
-});
+};
 
 // ====== Calendar Setup ======
 let calendarEntry = document.createElement("div");
@@ -177,7 +183,7 @@ function renderCalendar(date) {
     cell.textContent = day;
     const key = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
     if (entries[key]) cell.classList.add("has-entry");
-    cell.addEventListener("click", () => showCalendarEntry(key, day, month, year));
+    cell.onclick = () => showCalendarEntry(key, day, month, year);
     calendarGrid.appendChild(cell);
   }
 }
@@ -200,44 +206,51 @@ function showCalendarEntry(key, day, month, year) {
 
   calendarEntry.innerHTML = html;
 
-  const saveBtn = document.getElementById("saveCalendarBtn");
-  if (saveBtn) saveBtn.addEventListener("click", async () => {
+  const saveBtnCal = document.getElementById("saveCalendarBtn");
+  if (saveBtnCal) saveBtnCal.onclick = async () => {
     const text = document.getElementById("newCalendarEntry").value;
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
     renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
     renderPastEntries();
-    renderExportList();
-  });
+    if (typeof renderExportList === 'function') renderExportList();
+  };
 
   const saveEditBtn = document.getElementById("saveEditBtn");
-  if (saveEditBtn) saveEditBtn.addEventListener("click", async () => {
+  if (saveEditBtn) saveEditBtn.onclick = async () => {
     const newText = document.getElementById("editEntryTextarea").value;
     if (!newText) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, newText);
     renderCalendar(currentDate);
     renderPastEntries();
     alert("Entry updated!");
-    renderExportList();
-  });
+    if (typeof renderExportList === 'function') renderExportList();
+  };
 
   const deleteBtn = document.getElementById("deleteEntryBtn");
-  if (deleteBtn) deleteBtn.addEventListener("click", async () => {
+  if (deleteBtn) deleteBtn.onclick = async () => {
     if (confirm("Are you sure you want to delete this entry?")) {
       await deleteEntryFromFirebase(key);
       renderCalendar(currentDate);
       renderPastEntries();
       calendarEntry.style.display = "none";
-      renderExportList();
+      if (typeof renderExportList === 'function') renderExportList();
     }
-  });
+  };
 }
 
 // ====== Month Navigation ======
-document.getElementById("prevMonth").addEventListener("click", () => {
+document.getElementById("prevMonth").onclick = () => {
   currentDate.setMonth(currentDate.getMonth() - 1);
   renderCalendar(currentDate);
-});
-document.getElementById("nextMonth").addEventListener("click", () => {
-  currentDate.setMonth(currentDate.getMonth() + 1
+};
+document.getElementById("nextMonth").onclick = () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar(currentDate);
+};
+
+// ====== Hide All Sections Helper ======
+function hideAllSections() {
+  document.querySelectorAll(".view").forEach(s => s.style.display = "none");
+}
