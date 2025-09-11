@@ -1,8 +1,93 @@
+// ====== Firebase Setup ======
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
+  authDomain: "pastelthoughts-19dd4.firebaseapp.com",
+  projectId: "pastelthoughts-19dd4",
+  messagingSenderId: "578642737437",
+  appId: "pastelthoughts-19dd4.web.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ====== DOM Elements ======
+const fullEntry = document.getElementById('fullEntry');
+const backBtn = document.getElementById('backBtn');
+const entryDate = document.getElementById('entryDate');
+const entryText = document.getElementById('entryText');
+const timeline = document.getElementById('timeline');
+const editorTextarea = document.querySelector('.editor textarea');
+const saveBtn = document.querySelector('.editor .save-btn');
+const calendarBtn = document.getElementById("calendarBtn");
+const calendarSection = document.getElementById("calendar");
+const calendarGrid = document.getElementById("calendarGrid");
+const calendarMonth = document.getElementById("calendarMonth");
+const profileBtn = document.getElementById("profileBtn");
+const profileSection = document.getElementById("profile");
+const todayBtn = document.getElementById("todayBtn");
+const logoutBtn = document.getElementById('logoutBtn');
+const prevMonthBtn = document.getElementById("prevMonth");
+const nextMonthBtn = document.getElementById("nextMonth");
+
+let currentDate = new Date();
+let entries = {};
+let currentUser = null;
+
+// ====== Firebase Auth Listener ======
+onAuthStateChanged(auth, user => {
+  if (!user) return window.location.href = 'login.html';
+  currentUser = user;
+  loadEntries();
+});
+
+// ====== Load Entries ======
+async function loadEntries() {
+  const docRef = doc(db, "users", currentUser.uid);
+  const docSnap = await getDoc(docRef);
+  entries = docSnap.exists() ? docSnap.data().entries || {} : {};
+  renderPastEntries();
+  renderCalendar(currentDate);
+}
+
+// ====== Save / Delete Entry Functions ======
+async function saveEntryToFirebase(dateKey, text) {
+  entries[dateKey] = text;
+  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+}
+
+async function deleteEntryFromFirebase(dateKey) {
+  delete entries[dateKey];
+  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+}
+
+// ====== Render Past Entries ======
+function renderPastEntries() {
+  timeline.innerHTML = '<h3>Past Entries</h3>';
+  const sortedDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
+
+  sortedDates.forEach(dateKey => {
+    const entryValue = entries[dateKey];
+    const card = document.createElement('div');
+    card.classList.add('entry-card');
+    const displayDate = new Date(dateKey).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    card.innerHTML = `<strong>${displayDate}</strong><p>${entryValue}</p>`;
+
+    card.onclick = () => showFullEntry(dateKey, entryValue, displayDate);
+    timeline.appendChild(card);
+  });
+}
+
 // ====== Show Full Entry ======
 function showFullEntry(dateKey, entryValue, displayDate) {
   hideAllSections();
   fullEntry.style.display = 'flex';
   entryDate.textContent = displayDate;
+
   entryText.innerHTML = `
     <textarea id="editPastEntry" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${entryValue}</textarea>
     <div style="margin-top:10px; display:flex; gap:10px;">
@@ -11,32 +96,28 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     </div>
   `;
 
-  const savePastEditBtn = document.getElementById('savePastEditBtn');
-  const deletePastEntryBtn = document.getElementById('deletePastEntryBtn');
+  const saveBtn = document.getElementById('savePastEditBtn');
+  const deleteBtn = document.getElementById('deletePastEntryBtn');
 
-  savePastEditBtn.onclick = async () => {
+  saveBtn.onclick = async () => {
     const newText = document.getElementById('editPastEntry').value;
     if (!newText) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(dateKey, newText);
     renderPastEntries();
     renderCalendar(currentDate);
-    alert("Entry updated!");
     hideAllSections();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
-    if (typeof renderExportList === 'function') renderExportList();
   };
 
-  deletePastEntryBtn.onclick = async () => {
-    if (confirm("Are you sure you want to delete this entry?")) {
-      await deleteEntryFromFirebase(dateKey);
-      renderPastEntries();
-      renderCalendar(currentDate);
-      hideAllSections();
-      timeline.style.display = 'flex';
-      document.getElementById('editor').style.display = 'flex';
-      if (typeof renderExportList === 'function') renderExportList();
-    }
+  deleteBtn.onclick = async () => {
+    if (!confirm("Are you sure you want to delete this entry?")) return;
+    await deleteEntryFromFirebase(dateKey);
+    renderPastEntries();
+    renderCalendar(currentDate);
+    hideAllSections();
+    timeline.style.display = 'flex';
+    document.getElementById('editor').style.display = 'flex';
   };
 }
 
@@ -46,24 +127,10 @@ saveBtn.onclick = async () => {
   if (!text) return alert("Please write something before saving.");
   const todayKey = new Date().toISOString().split('T')[0];
 
-  try {
-    await saveEntryToFirebase(todayKey, text);
-    editorTextarea.value = "";
-    renderPastEntries();
-    renderCalendar(currentDate);
-    alert("Entry saved!");
-    if (typeof renderExportList === 'function') renderExportList();
-  } catch (err) {
-    console.error("Error saving entry:", err);
-    alert("Failed to save entry. Try again.");
-  }
-};
-
-// ====== Back Button ======
-backBtn.onclick = () => {
-  hideAllSections();
-  timeline.style.display = 'flex';
-  document.getElementById('editor').style.display = 'flex';
+  await saveEntryToFirebase(todayKey, text);
+  editorTextarea.value = "";
+  renderPastEntries();
+  renderCalendar(currentDate);
 };
 
 // ====== Calendar ======
@@ -108,8 +175,7 @@ function showCalendarEntry(key, day, month, year) {
                <button id="deleteEntryBtn" class="save-btn" style="background:#ff4d6d;">Delete</button>
              </div>`;
   } else {
-    html += `<p>No entry yet.</p>
-             <textarea id="newCalendarEntry" placeholder="Write something..." style="margin-top:10px;width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
+    html += `<textarea id="newCalendarEntry" placeholder="Write something..." style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
              <button id="saveCalendarBtn" class="save-btn" style="margin-top:10px;">Save</button>`;
   }
 
@@ -120,10 +186,9 @@ function showCalendarEntry(key, day, month, year) {
     const text = document.getElementById("newCalendarEntry").value;
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
-    renderCalendar(currentDate);
     renderPastEntries();
+    renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
-    if (typeof renderExportList === 'function') renderExportList();
   };
 
   const saveEditBtn = document.getElementById("saveEditBtn");
@@ -131,38 +196,32 @@ function showCalendarEntry(key, day, month, year) {
     const newText = document.getElementById("editEntryTextarea").value;
     if (!newText) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, newText);
-    renderCalendar(currentDate);
     renderPastEntries();
-    alert("Entry updated!");
-    if (typeof renderExportList === 'function') renderExportList();
+    renderCalendar(currentDate);
   };
 
   const deleteBtn = document.getElementById("deleteEntryBtn");
   if (deleteBtn) deleteBtn.onclick = async () => {
-    if (confirm("Are you sure you want to delete this entry?")) {
-      await deleteEntryFromFirebase(key);
-      renderCalendar(currentDate);
-      renderPastEntries();
-      calendarEntry.style.display = "none";
-      if (typeof renderExportList === 'function') renderExportList();
-    }
+    if (!confirm("Are you sure you want to delete this entry?")) return;
+    await deleteEntryFromFirebase(key);
+    renderPastEntries();
+    renderCalendar(currentDate);
+    calendarEntry.style.display = "none";
   };
 }
 
 // ====== Month Navigation ======
-document.getElementById("prevMonth").onclick = () => {
-  currentDate.setMonth(currentDate.getMonth() - 1);
-  renderCalendar(currentDate);
-};
-document.getElementById("nextMonth").onclick = () => {
-  currentDate.setMonth(currentDate.getMonth() + 1);
-  renderCalendar(currentDate);
-};
+prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(currentDate); };
+nextMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(currentDate); };
 
-// ====== Hide All Sections ======
-function hideAllSections() {
-  document.querySelectorAll(".view").forEach(s => s.style.display = "none");
-}
+// ====== Hide Sections / Navigation ======
+function hideAllSections() { document.querySelectorAll(".view").forEach(s => s.style.display = "none"); }
+todayBtn.onclick = () => { hideAllSections(); timeline.style.display='flex'; document.getElementById('editor').style.display='flex'; };
+calendarBtn.onclick = () => { hideAllSections(); calendarSection.style.display='flex'; renderCalendar(currentDate); };
+profileBtn.onclick = () => { hideAllSections(); profileSection.style.display='flex'; };
+backBtn.onclick = () => { hideAllSections(); timeline.style.display='flex'; document.getElementById('editor').style.display='flex'; };
+logoutBtn.onclick = async () => { await signOut(auth); window.location.href='index.html'; };
+
 
 // ====== Today Button ======
 todayBtn.onclick = () => {
@@ -189,3 +248,4 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
