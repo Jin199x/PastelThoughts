@@ -40,7 +40,7 @@ let currentUser = null;
 
 // ====== Firebase Auth Listener ======
 onAuthStateChanged(auth, user => {
-  if (!user) return window.location.href = 'login.html';
+  if (!user) return window.location.href = 'index.html';
   currentUser = user;
   loadEntries();
 });
@@ -106,6 +106,7 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     renderPastEntries();
     renderCalendar(currentDate);
     hideAllSections();
+    renderExportList();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
   };
@@ -116,6 +117,7 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     renderPastEntries();
     renderCalendar(currentDate);
     hideAllSections();
+    renderExportList();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
   };
@@ -130,6 +132,7 @@ saveBtn.onclick = async () => {
   await saveEntryToFirebase(todayKey, text);
   editorTextarea.value = "";
   renderPastEntries();
+  renderExportList();
   renderCalendar(currentDate);
 };
 
@@ -169,46 +172,72 @@ function showCalendarEntry(key, day, month, year) {
   let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>`;
 
   if (entries[key]) {
-    html += `<textarea id="editEntryTextarea" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${entries[key]}</textarea>
+    // Show entry first (like Past Entries)
+    html += `<p id="calendarEntryText" style="white-space:pre-wrap;">${entries[key]}</p>
              <div style="margin-top:10px; display:flex; gap:10px;">
-               <button id="saveEditBtn" class="save-btn">Save Edit</button>
-               <button id="deleteEntryBtn" class="save-btn" style="background:#ff4d6d;">Delete</button>
+               <button id="editCalendarEntryBtn" class="save-btn">Edit</button>
+               <button id="deleteCalendarEntryBtn" class="save-btn" style="background:#ff4d6d;">Delete</button>
              </div>`;
   } else {
+    // Empty entry: directly show textarea
     html += `<textarea id="newCalendarEntry" placeholder="Write something..." style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
              <button id="saveCalendarBtn" class="save-btn" style="margin-top:10px;">Save</button>`;
   }
 
   calendarEntry.innerHTML = html;
 
+  // Save new entry
   const saveBtnCal = document.getElementById("saveCalendarBtn");
   if (saveBtnCal) saveBtnCal.onclick = async () => {
     const text = document.getElementById("newCalendarEntry").value;
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
     renderPastEntries();
+    renderExportList?.();
     renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
   };
 
-  const saveEditBtn = document.getElementById("saveEditBtn");
-  if (saveEditBtn) saveEditBtn.onclick = async () => {
-    const newText = document.getElementById("editEntryTextarea").value;
-    if (!newText) return alert("Cannot save empty entry!");
-    await saveEntryToFirebase(key, newText);
-    renderPastEntries();
-    renderCalendar(currentDate);
+  // Edit existing entry
+  const editBtn = document.getElementById("editCalendarEntryBtn");
+  if (editBtn) editBtn.onclick = () => {
+    const currentText = entries[key];
+    calendarEntry.innerHTML = `
+      <h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>
+      <textarea id="editEntryTextarea" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${currentText}</textarea>
+      <div style="margin-top:10px; display:flex; gap:10px;">
+        <button id="saveEditBtn" class="save-btn">Save</button>
+        <button id="cancelEditBtn" class="save-btn" style="background:#aaa;">Cancel</button>
+      </div>
+    `;
+
+    document.getElementById("saveEditBtn").onclick = async () => {
+      const newText = document.getElementById("editEntryTextarea").value;
+      if (!newText) return alert("Cannot save empty entry!");
+      await saveEntryToFirebase(key, newText);
+      renderPastEntries();
+      renderExportList?.();
+      renderCalendar(currentDate);
+      showCalendarEntry(key, day, month, year);
+    };
+
+    document.getElementById("cancelEditBtn").onclick = () => {
+      showCalendarEntry(key, day, month, year);
+    };
   };
 
-  const deleteBtn = document.getElementById("deleteEntryBtn");
+  // Delete entry
+  const deleteBtn = document.getElementById("deleteCalendarEntryBtn");
   if (deleteBtn) deleteBtn.onclick = async () => {
     if (!confirm("Are you sure you want to delete this entry?")) return;
     await deleteEntryFromFirebase(key);
     renderPastEntries();
+    renderExportList?.();
     renderCalendar(currentDate);
     calendarEntry.style.display = "none";
   };
 }
+
 
 // ====== Month Navigation ======
 prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(currentDate); };
@@ -248,4 +277,5 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
