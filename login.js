@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   signupForm.addEventListener('submit', e => {
     e.preventDefault();
-    const email = document.getElementById('signupEmail')
-    const password = document.getElementById('signupPassword')
+    const email = document.getElementById('signupEmail');
+    const password = document.getElementById('signupPassword');
     if (!email || !password) return alert('Enter email and password');
 
     createUserWithEmailAndPassword(auth, email, password)
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   forgotForm.addEventListener('submit', e => {
     e.preventDefault();
-    const email = document.getElementById('forgotEmail')
+    const email = document.getElementById('forgotEmail');
     if (!email) return alert('Enter your email');
 
     sendPasswordResetEmail(auth, email)
@@ -109,4 +109,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
 
