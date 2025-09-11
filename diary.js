@@ -109,6 +109,7 @@ function showFullEntry(dateKey, entryValue, displayDate) {
     renderExportList();
     timeline.style.display = 'flex';
     document.getElementById('editor').style.display = 'flex';
+    alert("Entry saved!");
   };
 
   deleteBtn.onclick = async () => {
@@ -134,6 +135,7 @@ saveBtn.onclick = async () => {
   renderPastEntries();
   renderExportList();
   renderCalendar(currentDate);
+  alert("Entry saved!");
 };
 
 // ====== Calendar ======
@@ -193,9 +195,10 @@ function showCalendarEntry(key, day, month, year) {
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
     renderPastEntries();
-    renderExportList?.();
+    renderExportList();
     renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
+    alert("Entry saved!");
   };
 
   // Edit existing entry
@@ -216,9 +219,10 @@ function showCalendarEntry(key, day, month, year) {
       if (!newText) return alert("Cannot save empty entry!");
       await saveEntryToFirebase(key, newText);
       renderPastEntries();
-      renderExportList?.();
+      renderExportList();
       renderCalendar(currentDate);
       showCalendarEntry(key, day, month, year);
+      alert("Entry updated!");
     };
 
     document.getElementById("cancelEditBtn").onclick = () => {
@@ -277,5 +281,6 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
