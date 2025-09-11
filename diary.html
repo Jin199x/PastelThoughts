@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pastel Thoughts Diary</title>
+  <link rel="stylesheet" href="diary.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Merriweather&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">📔 Pastel Thoughts</div>
+      <div class="date">September 11, 2025</div>
+      <nav>
+        <button id="todayBtn">Today</button>
+        <button id="calendarBtn">Calendar</button>
+        <button id="profileBtn">Profile</button>
+        <button id="logoutBtn">Logout</button>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- Editor (default view) -->
+      <section class="editor view" id="editor">
+        <textarea placeholder="Write your thoughts here..."></textarea>
+        <button class="save-btn">Save Entry</button>
+      </section>
+
+      <!-- Full entry view -->
+      <section class="full-entry view" id="fullEntry">
+        <button class="back-btn" id="backBtn">← Back</button>
+        <h2 id="entryDate">Entry Date</h2>
+        <p id="entryText">Full entry content...</p>
+      </section>
+
+      <!-- Timeline -->
+      <section class="timeline view" id="timeline">
+        <h3>Past Entries</h3>
+        <div class="entry-card" data-date="Sep 10, 2025" data-text="Had a productive day working on my project...">
+          <strong>Sep 10, 2025</strong>
+          <p>Had a productive day working on my project...</p>
+        </div>
+        <div class="entry-card" data-date="Sep 09, 2025" data-text="Went for a walk in the park and felt refreshed...">
+          <strong>Sep 09, 2025</strong>
+          <p>Went for a walk in the park and felt refreshed...</p>
+        </div>
+      </section>
+
+      <!-- Calendar -->
+      <section class="calendar view" id="calendar" style="display:none;">
+        <div class="calendar-nav">
+          <button id="prevMonth">←</button>
+          <span id="calendarMonth">September 2025</span>
+          <button id="nextMonth">→</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+
+      <!-- Profile -->
+      <section class="profile view" id="profile" style="display:none;">
+        <h2>👤 Your Profile</h2>
+        <div class="profile-section">
+          <div style="display:flex;justify-content:center;margin-bottom:10px;">
+            <img id="profilePic" src="default-avatar.png" alt="Profile Picture" width="120" height="120" style="border-radius:50%;object-fit:cover;border:2px solid #d94f87;">
+          </div>
+          <h3>User Info</h3>
+          <p><strong>Name:</strong> Placeholder</p>
+          <p><strong>Email:</strong> Placeholder</p>
+        </div>
+
+        <div class="profile-section">
+          <h3>Customization</h3>
+          <label style="font-weight:600;margin-bottom:8px;">Change Your Picture:</label>
+          <input type="file" id="uploadPic" accept="image/*">
+          <canvas id="cropCanvas" width="300" height="300" style="border:1px solid #d94f87; display:none;"></canvas>
+          <button id="applyCropBtn" class="save-btn" style="display:none;">Apply Crop</button>
+        </div>
+
+        <label style="font-weight:600;margin-bottom:8px;">Change Color Theme:</label>
+        <div style="display:flex;gap:10px;margin-bottom:15px;">
+          <button class="theme-btn" data-theme="theme-pink">Pink</button>
+          <button class="theme-btn" data-theme="theme-blue">Blue</button>
+          <button class="theme-btn" data-theme="theme-dark">Dark</button>
+          <button class="theme-btn" data-theme="theme-lavender">Lavender</button>
+        </div> 
+
+        <div class="profile-section">
+          <h3>Stats</h3>
+          <p><strong>Total Entries:</strong> 0</p>
+          <p><strong>Current Streak:</strong> 0 days</p>
+        </div>
+
+        <div class="profile-section">
+          <h3>Export</h3>
+          <div style="margin-top:10px; text-align:right;">
+            <button id="toggleSelectBtn" class="save-btn" style="padding:5px 10px; font-size:12px;">Select All</button>
+          </div>
+          <input type="text" id="searchExport" placeholder="Search entries..." style="margin-bottom:10px;width:100%;padding:6px;border-radius:6px;border:1px solid #d94f87;">
+          <div id="exportListContainer" style="max-height: 200px; overflow-y: auto; border: 1px solid #d94f87; padding: 8px; border-radius: 8px; margin-bottom: 10px;">
+            <div id="exportList"></div>
+          </div>
+          <button id="exportBtn" class="save-btn">Export Selected Entries (PDF)</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="diary.js"></script>
+  <script src="calendar.js"></script>
+  <script src="profile.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
