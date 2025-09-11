@@ -25,8 +25,8 @@
 
       <!-- Editor (default view) -->
       <section class="editor view" id="editor">
-        <textarea placeholder="Write your thoughts here..."></textarea>
-        <button class="save-btn">Save Entry</button>
+        <textarea id="editorTextarea" placeholder="Write your thoughts here..."></textarea>
+        <button id="saveEntryBtn" class="save-btn">Save Entry</button>
       </section>
 
       <!-- Full entry view -->
@@ -39,14 +39,6 @@
       <!-- Timeline -->
       <section class="timeline view" id="timeline">
         <h3>Past Entries</h3>
-        <div class="entry-card" data-date="Sep 10, 2025" data-text="Had a productive day working on my project...">
-          <strong>Sep 10, 2025</strong>
-          <p>Had a productive day working on my project...</p>
-        </div>
-        <div class="entry-card" data-date="Sep 09, 2025" data-text="Went for a walk in the park and felt refreshed...">
-          <strong>Sep 09, 2025</strong>
-          <p>Went for a walk in the park and felt refreshed...</p>
-        </div>
       </section>
 
       <!-- Calendar -->
@@ -110,10 +102,9 @@
   </div>
 
   <!-- Scripts -->
- <script type="module" src="diary.js"></script>
+  <script type="module" src="diary.js"></script>
   <script src="calendar.js"></script>
   <script src="profile.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
-
