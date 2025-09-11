@@ -22,32 +22,34 @@ const forgotForm = document.getElementById('forgotForm');
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
 
-// --- Show/hide forms ---
+// --- Toggle forms (preserve original layout)
 function showForm(formType) {
-  loginForm.style.display = formType === 'login' ? 'block' : 'none';
-  signupForm.style.display = formType === 'signup' ? 'block' : 'none';
-  forgotForm.style.display = formType === 'forgot' ? 'block' : 'none';
+  loginForm.style.display = formType === 'login' ? 'flex' : 'none';
+  signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
+  forgotForm.style.display = formType === 'forgot' ? 'flex' : 'none';
 }
 
 // --- Link events ---
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
 
-// --- Add Back links dynamically inside signup and forgot forms ---
-function addBackLink(form, id) {
-  const backLink = document.createElement('a');
-  backLink.href = "#";
-  backLink.id = id;
-  backLink.textContent = "Back to Login";
-  backLink.style.display = "block";
-  backLink.style.marginTop = "10px";
-  form.appendChild(backLink);
-}
+// --- Back links inside HTML forms ---
+const backSignup = document.createElement('a');
+backSignup.href = "#";
+backSignup.textContent = "Back to Login";
+backSignup.id = "backFromSignup";
+backSignup.style.display = "block";
+backSignup.style.marginTop = "10px";
+signupForm.appendChild(backSignup);
 
-addBackLink(signupForm, 'backFromSignup');
-addBackLink(forgotForm, 'backFromForgot');
+const backForgot = document.createElement('a');
+backForgot.href = "#";
+backForgot.textContent = "Back to Login";
+backForgot.id = "backFromForgot";
+backForgot.style.display = "block";
+backForgot.style.marginTop = "10px";
+forgotForm.appendChild(backForgot);
 
-// --- Back link click ---
 document.addEventListener('click', e => {
   if (e.target.id === 'backFromSignup' || e.target.id === 'backFromForgot') {
     e.preventDefault();
@@ -60,7 +62,6 @@ loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-
   if (!email || !password) return alert('Enter email and password');
 
   signInWithEmailAndPassword(auth, email, password)
@@ -76,7 +77,6 @@ signupForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value;
   const password = document.getElementById('signupPassword').value;
-
   if (!email || !password) return alert('Enter email and password');
 
   createUserWithEmailAndPassword(auth, email, password)
@@ -91,7 +91,6 @@ signupForm.addEventListener('submit', e => {
 forgotForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value;
-
   if (!email) return alert('Enter your email');
 
   sendPasswordResetEmail(auth, email)
