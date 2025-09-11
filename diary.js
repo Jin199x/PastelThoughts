@@ -1,3 +1,6 @@
+import { getFirestore, doc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const db = getFirestore(app);
 // ====== DOM Elements ======
 const fullEntry = document.getElementById('fullEntry');
 const backBtn = document.getElementById('backBtn');
@@ -227,3 +230,4 @@ function hideAllSections() {
 logoutBtn.addEventListener('click', () => {
   window.location.href = 'login.html'; // keep login.html as your redirect
 });
+
