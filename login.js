@@ -33,10 +33,21 @@ function showForm(formType) {
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
 
-// Back to login links inside signup/forgot forms
-signupForm.insertAdjacentHTML('beforeend', '<a href="#" id="backFromSignup">Back to Login</a>');
-forgotForm.insertAdjacentHTML('beforeend', '<a href="#" id="backFromForgot">Back to Login</a>');
+// --- Add Back links dynamically inside signup and forgot forms ---
+function addBackLink(form, id) {
+  const backLink = document.createElement('a');
+  backLink.href = "#";
+  backLink.id = id;
+  backLink.textContent = "Back to Login";
+  backLink.style.display = "block";
+  backLink.style.marginTop = "10px";
+  form.appendChild(backLink);
+}
 
+addBackLink(signupForm, 'backFromSignup');
+addBackLink(forgotForm, 'backFromForgot');
+
+// --- Back link click ---
 document.addEventListener('click', e => {
   if (e.target.id === 'backFromSignup' || e.target.id === 'backFromForgot') {
     e.preventDefault();
