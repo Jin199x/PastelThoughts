@@ -198,6 +198,7 @@ function showCalendarEntry(key, day, month, year) {
     renderExportList();
     renderCalendar(currentDate);
     showCalendarEntry(key, day, month, year);
+    calendarEntry.style.display = "none";
     alert("Entry saved!");
   };
 
@@ -222,6 +223,7 @@ function showCalendarEntry(key, day, month, year) {
       renderExportList();
       renderCalendar(currentDate);
       showCalendarEntry(key, day, month, year);
+      calendarEntry.style.display = "none";
       alert("Entry updated!");
     };
 
@@ -281,6 +283,7 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
 
