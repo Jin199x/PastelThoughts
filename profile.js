@@ -10,17 +10,20 @@ themeButtons.forEach(btn => {
   });
 });
 
-// ====== Profile Picture Upload ======
-// ====== Profile Picture Crop ======
+// ====== Profile Picture Upload to ImgBB ======
 const uploadPic = document.getElementById("uploadPic");
 const cropCanvas = document.getElementById("cropCanvas");
 const applyCropBtn = document.getElementById("applyCropBtn");
+const profilePic = document.getElementById("profilePic");
 const ctx = cropCanvas.getContext("2d");
 
 let img = new Image();
 let isDragging = false;
 let startX = 0, startY = 0;
 let cropRect = { x: 0, y: 0, width: 0, height: 0 };
+
+// Replace with your ImgBB API key
+const imgbbApiKey = "7ca937bbce3d1c452e27b7b18d04a451";
 
 // Handle image upload
 uploadPic.addEventListener("change", (e) => {
@@ -41,7 +44,7 @@ img.onload = () => {
   ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
 };
 
-// Helper to get mouse/touch coordinates relative to canvas
+// Dragging logic (unchanged)
 function getPos(e) {
   const rect = cropCanvas.getBoundingClientRect();
   let x, y;
@@ -54,40 +57,34 @@ function getPos(e) {
   }
   return { x, y };
 }
-
-// Start dragging
-function startDrag(e) {
-  isDragging = true;
-  const pos = getPos(e);
-  startX = pos.x;
-  startY = pos.y;
+function startDrag(e){ isDragging=true; const pos=getPos(e); startX=pos.x; startY=pos.y; }
+function drag(e){ 
+  if(!isDragging) return;
+  const pos=getPos(e);
+  cropRect.x=Math.min(startX,pos.x);
+  cropRect.y=Math.min(startY,pos.y);
+  cropRect.width=Math.abs(pos.x-startX);
+  cropRect.height=Math.abs(pos.y-startY);
+  ctx.clearRect(0,0,cropCanvas.width,cropCanvas.height);
+  ctx.drawImage(img,0,0,cropCanvas.width,cropCanvas.height);
+  ctx.strokeStyle="#d94f87";
+  ctx.lineWidth=2;
+  ctx.strokeRect(cropRect.x,cropRect.y,cropRect.width,cropRect.height);
 }
+function endDrag(){ isDragging=false; }
 
-// Dragging
-function drag(e) {
-  if (!isDragging) return;
-  const pos = getPos(e);
-  cropRect.x = Math.min(startX, pos.x);
-  cropRect.y = Math.min(startY, pos.y);
-  cropRect.width = Math.abs(pos.x - startX);
-  cropRect.height = Math.abs(pos.y - startY);
-  // redraw
-  ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-  ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
-  // overlay crop rectangle
-  ctx.strokeStyle = "#d94f87";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(cropRect.x, cropRect.y, cropRect.width, cropRect.height);
-}
+cropCanvas.addEventListener("mousedown", startDrag);
+cropCanvas.addEventListener("mousemove", drag);
+cropCanvas.addEventListener("mouseup", endDrag);
+cropCanvas.addEventListener("mouseleave", endDrag);
+cropCanvas.addEventListener("touchstart", startDrag);
+cropCanvas.addEventListener("touchmove", drag);
+cropCanvas.addEventListener("touchend", endDrag);
 
-// End dragging
-function endDrag() {
-  isDragging = false;
-}
-
-// Apply crop
-applyCropBtn.addEventListener("click", () => {
+// Apply crop & upload to ImgBB
+applyCropBtn.addEventListener("click", async () => {
   if (!cropRect.width || !cropRect.height) return;
+
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = cropRect.width;
   tempCanvas.height = cropRect.height;
@@ -97,22 +94,45 @@ applyCropBtn.addEventListener("click", () => {
     cropRect.x, cropRect.y, cropRect.width, cropRect.height,
     0, 0, cropRect.width, cropRect.height
   );
-  // set cropped image as profile picture
-  document.getElementById("profilePic").src = tempCanvas.toDataURL();
+
+  // Convert to base64
+  const base64Image = tempCanvas.toDataURL().split(",")[1];
+
+  try {
+    // Upload to ImgBB
+    const form = new FormData();
+    form.append("image", base64Image);
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+      method: "POST",
+      body: form
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      const imageUrl = data.data.url;
+      profilePic.src = imageUrl; // Update the profile pic
+
+      // OPTIONAL: save the URL to Firestore for the current user
+      const userDocRef = doc(db, "users", currentUser.uid);
+      await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
+
+      alert("Profile picture updated!");
+    } else {
+      console.error(data);
+      alert("Failed to upload image.");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Error uploading image.");
+  }
+
   cropCanvas.style.display = "none";
   applyCropBtn.style.display = "none";
   uploadPic.value = "";
 });
 
-// ======= Event listeners for desktop & mobile =======
-cropCanvas.addEventListener("mousedown", startDrag);
-cropCanvas.addEventListener("mousemove", drag);
-cropCanvas.addEventListener("mouseup", endDrag);
-cropCanvas.addEventListener("mouseleave", endDrag);
-
-cropCanvas.addEventListener("touchstart", startDrag);
-cropCanvas.addEventListener("touchmove", drag);
-cropCanvas.addEventListener("touchend", endDrag);
 
 // ===== Export Entries Section =====
 const exportList = document.getElementById('exportList');
@@ -190,5 +210,6 @@ exportBtn.addEventListener('click', () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
 
 
