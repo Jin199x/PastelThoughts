@@ -21,51 +21,31 @@ const signupForm = document.getElementById('signupForm');
 const forgotForm = document.getElementById('forgotForm');
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
+const backFromSignup = document.getElementById('backFromSignup');
+const backFromForgot = document.getElementById('backFromForgot');
 
 // --- Show/hide forms ---
 function showForm(formType) {
-  loginForm.style.display = formType === 'login' ? 'block' : 'none';
-  signupForm.style.display = formType === 'signup' ? 'block' : 'none';
-  forgotForm.style.display = formType === 'forgot' ? 'block' : 'none';
+  loginForm.style.display = formType === 'login' ? 'flex' : 'none';
+  signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
+  forgotForm.style.display = formType === 'forgot' ? 'flex' : 'none';
 }
 
 // --- Link events ---
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
-
-// --- Add Back links dynamically inside signup and forgot forms ---
-function addBackLink(form, id) {
-  const backLink = document.createElement('a');
-  backLink.href = "#";
-  backLink.id = id;
-  backLink.textContent = "Back to Login";
-  backLink.style.display = "block";
-  backLink.style.marginTop = "10px";
-  form.appendChild(backLink);
-}
-
-addBackLink(signupForm, 'backFromSignup');
-addBackLink(forgotForm, 'backFromForgot');
-
-// --- Back link click ---
-document.addEventListener('click', e => {
-  if (e.target.id === 'backFromSignup' || e.target.id === 'backFromForgot') {
-    e.preventDefault();
-    showForm('login');
-  }
-});
+backFromSignup.addEventListener('click', e => { e.preventDefault(); showForm('login'); });
+backFromForgot.addEventListener('click', e => { e.preventDefault(); showForm('login'); });
 
 // --- Firebase Login ---
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-
   if (!email || !password) return alert('Enter email and password');
 
   signInWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
-      console.log('Logged in user:', userCredential.user.uid);
       window.location.href = 'diary.html';
     })
     .catch(error => alert(error.message));
@@ -76,7 +56,6 @@ signupForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value;
   const password = document.getElementById('signupPassword').value;
-
   if (!email || !password) return alert('Enter email and password');
 
   createUserWithEmailAndPassword(auth, email, password)
@@ -91,7 +70,6 @@ signupForm.addEventListener('submit', e => {
 forgotForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value;
-
   if (!email) return alert('Enter your email');
 
   sendPasswordResetEmail(auth, email)
