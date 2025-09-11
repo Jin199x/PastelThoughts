@@ -15,6 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Grab forms and links
 const loginForm = document.getElementById('loginForm');
@@ -98,4 +99,5 @@ forgotForm.addEventListener('submit', e => {
     .then(() => alert('Password reset email sent!'))
     .catch(error => alert(error.message));
 });
+
 
