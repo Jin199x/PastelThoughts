@@ -21,10 +21,8 @@ const signupForm = document.getElementById('signupForm');
 const forgotForm = document.getElementById('forgotForm');
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
-const backFromSignup = document.getElementById('backFromSignup');
-const backFromForgot = document.getElementById('backFromForgot');
 
-// --- Show/hide forms ---
+// --- Toggle forms (preserve original layout)
 function showForm(formType) {
   loginForm.style.display = formType === 'login' ? 'flex' : 'none';
   signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
@@ -34,8 +32,30 @@ function showForm(formType) {
 // --- Link events ---
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
-backFromSignup.addEventListener('click', e => { e.preventDefault(); showForm('login'); });
-backFromForgot.addEventListener('click', e => { e.preventDefault(); showForm('login'); });
+
+// --- Back links inside HTML forms ---
+const backSignup = document.createElement('a');
+backSignup.href = "#";
+backSignup.textContent = "Back to Login";
+backSignup.id = "backFromSignup";
+backSignup.style.display = "block";
+backSignup.style.marginTop = "10px";
+signupForm.appendChild(backSignup);
+
+const backForgot = document.createElement('a');
+backForgot.href = "#";
+backForgot.textContent = "Back to Login";
+backForgot.id = "backFromForgot";
+backForgot.style.display = "block";
+backForgot.style.marginTop = "10px";
+forgotForm.appendChild(backForgot);
+
+document.addEventListener('click', e => {
+  if (e.target.id === 'backFromSignup' || e.target.id === 'backFromForgot') {
+    e.preventDefault();
+    showForm('login');
+  }
+});
 
 // --- Firebase Login ---
 loginForm.addEventListener('submit', e => {
@@ -46,6 +66,7 @@ loginForm.addEventListener('submit', e => {
 
   signInWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
+      console.log('Logged in user:', userCredential.user.uid);
       window.location.href = 'diary.html';
     })
     .catch(error => alert(error.message));
