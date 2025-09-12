@@ -293,6 +293,32 @@ logoutBtn.onclick = async () => {
   window.location.href = 'index.html';
 };
 
+//=== DATE config ===
+const dateEl = document.getElementById("currentDate");
+
+function updateDate() {
+  const today = new Date();
+  const options = { month: "long", day: "numeric", year: "numeric" };
+  dateEl.textContent = today.toLocaleDateString("en-US", options);
+}
+
+// Initial display
+updateDate();
+
+// Calculate milliseconds until next midnight
+function scheduleMidnightUpdate() {
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const msUntilMidnight = tomorrow - now;
+
+  setTimeout(() => {
+    updateDate(); // Update at midnight
+    setInterval(updateDate, 24 * 60 * 60 * 1000); // Then every 24h
+  }, msUntilMidnight);
+}
+
+scheduleMidnightUpdate();
+
 
 
 
