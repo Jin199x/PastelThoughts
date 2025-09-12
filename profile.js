@@ -9,6 +9,23 @@ themeButtons.forEach(btn => {
     body.classList.add(selectedTheme);
   });
 });
+// ====== Load saved profile picture from Firestore =====
+async function loadProfilePic() {
+  try {
+    const userDocRef = doc(db, "users", currentUser.uid);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return;
+    const userData = userSnap.data();
+    if (userData.profilePic) {
+      profilePic.src = userData.profilePic; // load saved URL
+    }
+  } catch (err) {
+    console.error("Failed to load profile picture:", err);
+  }
+}
+
+// Call this after confirming currentUser exists (after login)
+if (currentUser) loadProfilePic();
 
 // ====== Profile Picture Upload to ImgBB ======
 const uploadPic = document.getElementById("uploadPic");
@@ -80,7 +97,6 @@ cropCanvas.addEventListener("mouseleave", endDrag);
 cropCanvas.addEventListener("touchstart", startDrag);
 cropCanvas.addEventListener("touchmove", drag);
 cropCanvas.addEventListener("touchend", endDrag);
-
 // ===== Apply crop & upload to ImgBB + save URL to Firestore =====
 applyCropBtn.addEventListener("click", async () => {
   if (!cropRect.width || !cropRect.height) return;
@@ -118,6 +134,9 @@ applyCropBtn.addEventListener("click", async () => {
       // Save the URL to Firestore for the current user
       const userDocRef = doc(db, "users", currentUser.uid);
       await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
+
+      // Refresh profile pic from Firestore to ensure it persists
+      await loadProfilePic();
 
       alert("Profile picture updated successfully!");
     } else {
@@ -230,5 +249,6 @@ exportBtn.addEventListener('click', async () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
 
 
