@@ -319,6 +319,27 @@ function scheduleMidnightUpdate() {
 
 scheduleMidnightUpdate();
 
+// == Greeting ==
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // Store current user
+    window.currentUser = user;
+
+    const userDocRef = doc(db, "users", window.currentUser.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+      const savedName = docSnap.data().name || "User";
+
+      // Update sidebar greeting
+      document.getElementById("welcomeSidebar").textContent = `Welcome, ${savedName}!`;
+
+      // Optional: also update the input placeholder
+      profileNameInput.placeholder = savedName;
+    }
+  }
+});
+
 
 
 
