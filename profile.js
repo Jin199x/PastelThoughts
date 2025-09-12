@@ -1,3 +1,24 @@
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return window.location.href = 'index.html';
+  currentUser = user;
+
+  // Load entries
+  await loadEntries();
+
+  // Load profile picture
+  await loadProfilePic();
+
+  // Load user info (name/email)
+  await loadUserInfo();
+
+  // Refresh stats
+  refreshProfileStats();
+
+  // Render export list
+  await renderExportList();
+});
+
+
 // ===== Theme Selector Logic =====
 const themeButtons = document.querySelectorAll(".theme-btn");
 const body = document.body;
@@ -324,6 +345,7 @@ function refreshProfileStats() {
 loadEntries().then(() => {
   refreshProfileStats();
 });
+
 
 
 
