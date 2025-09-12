@@ -47,15 +47,28 @@ onAuthStateChanged(auth, user => {
 });
 
 // ====== Save / Delete Entry Functions (Firestore only) ======
+// in-memory entries cache
+let entries = {};
+
+// ====== Save Entry ======
 async function saveEntryToFirebase(dateKey, text) {
-  if (!window.currentUser) return;
-  const userRef = doc(db, "users", window.currentUser.uid);
-  await updateDoc(userRef, {
-    [`entries.${dateKey}`]: text
-  });
+  if (!currentUser) return;
+
+  // Update in-memory entries
+  entries[dateKey] = text;
+
+  // Push to Firestore
+  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
 }
+
+// ====== Delete Entry ======
 async function deleteEntryFromFirebase(dateKey) {
+  if (!currentUser) return;
+
+  // Remove from in-memory entries
   delete entries[dateKey];
+
+  // Push to Firestore
   await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
 }
 
@@ -358,6 +371,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
