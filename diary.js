@@ -50,12 +50,21 @@ onAuthStateChanged(auth, user => {
 async function saveEntryToFirebase(dateKey, text) {
   if (!currentUser) return;
   const userRef = doc(db, "users", currentUser.uid);
+
+  // Ensure document exists and entries object exists
+  await setDoc(userRef, { entries: {} }, { merge: true });
+
+  // Save the specific entry
   await setDoc(userRef, { [`entries.${dateKey}`]: text }, { merge: true });
 }
 
 async function deleteEntryFromFirebase(dateKey) {
   if (!currentUser) return;
   const userRef = doc(db, "users", currentUser.uid);
+
+  // Ensure document exists
+  await setDoc(userRef, { entries: {} }, { merge: true });
+
   await setDoc(userRef, { [`entries.${dateKey}`]: deleteField() }, { merge: true });
 }
 
@@ -357,3 +366,4 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
