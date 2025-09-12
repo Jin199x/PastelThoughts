@@ -370,22 +370,24 @@ body.theme-lavender .editor textarea,
 body.theme-lavender .full-entry,
 body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6); }
 
-/* ====== Desktop Calendar Styling ====== */
-#calendarGrid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+/* ====== Calendar Section ====== */
+.calendar {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeIn 0.3s ease;
 }
 
-#calendarGrid .calendar-cell {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
+/* Calendar navigation buttons, grid, etc. */
+
+/* Calendar entry card and textarea font */
+#calendarEntry,
+#calendarEntry p,
+#calendarEntry textarea,
+#calendarEntry #calendarEntryText {
+  font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
+  color: #5a2a3d;
+  font-weight: 600;
 }
 
 /* ====== Responsiveness ===== */
@@ -509,3 +511,4 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     font-size: 14px;
   }
 }
+
