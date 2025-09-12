@@ -320,6 +320,16 @@ function scheduleMidnightUpdate() {
 scheduleMidnightUpdate();
 
 // == Greeting ==
+function getTimeBasedGreeting(name) {
+  const now = new Date();
+  const hour = now.getHours();
+
+  if (hour >= 5 && hour < 12) return `Good morning, ${name}!`;
+  if (hour >= 12 && hour < 17) return `Good afternoon, ${name}!`;
+  if (hour >= 17 && hour < 21) return `Good evening, ${name}!`;
+  return `Hello, ${name}!`;
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     window.currentUser = user;
@@ -334,6 +344,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
