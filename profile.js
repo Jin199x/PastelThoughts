@@ -38,16 +38,15 @@ let allSelected = false;
 // ===== Firebase Auth Listener =====
 onAuthStateChanged(auth, async (user) => {
   if (!user) return window.location.href = 'index.html';
-  currentUser = user;
 
-  // Load entries from diary.js
-  await loadEntries();
+  // Use currentUser from diary.js if available
+  window.currentUser = user;
 
-  // Load profile data
+  // Wait for diary.js entries to load
+  if (window.loadEntries) await window.loadEntries();
+
   await loadProfilePic();
   await loadUserInfo();
-
-  // Render stats and export list
   refreshProfileStats();
   renderExportList();
 });
@@ -55,7 +54,7 @@ onAuthStateChanged(auth, async (user) => {
 // ===== Load Profile Picture =====
 async function loadProfilePic() {
   try {
-    const userDocRef = doc(db, "users", currentUser.uid);
+    const userDocRef = doc(db, "users", window.currentUser.uid);
     const userSnap = await getDoc(userDocRef);
     if (!userSnap.exists()) return;
     const userData = userSnap.data();
@@ -133,7 +132,7 @@ applyCropBtn.addEventListener("click", async () => {
     if (data.success) {
       const imageUrl = data.data.url;
       profilePic.src = imageUrl;
-      const userDocRef = doc(db, "users", currentUser.uid);
+      const userDocRef = doc(db, "users", window.currentUser.uid);
       await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
       await loadProfilePic();
       alert("Profile picture updated successfully!");
@@ -150,8 +149,8 @@ applyCropBtn.addEventListener("click", async () => {
 
 // ===== User Info =====
 async function loadUserInfo() {
-  profileEmail.textContent = currentUser.email;
-  const userDocRef = doc(db, "users", currentUser.uid);
+  profileEmail.textContent = window.currentUser.email;
+  const userDocRef = doc(db, "users", window.currentUser.uid);
   const userSnap = await getDoc(userDocRef);
   if (userSnap.exists()) {
     const userData = userSnap.data();
@@ -162,14 +161,15 @@ async function loadUserInfo() {
 saveNameBtn.addEventListener("click", async () => {
   const newName = profileNameInput.value.trim();
   if (!newName) return alert("Name cannot be empty!");
-  const userDocRef = doc(db, "users", currentUser.uid);
+  const userDocRef = doc(db, "users", window.currentUser.uid);
   await setDoc(userDocRef, { name: newName }, { merge: true });
   alert("Name updated successfully!");
 });
 
 // ===== Stats =====
 function updateStats() {
-  const entryDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
+  const userEntries = window.entries || {};
+  const entryDates = Object.keys(userEntries).sort((a, b) => new Date(b) - new Date(a));
   const today = new Date();
   let streak = 0;
   if (entryDates.length > 0) {
@@ -191,13 +191,14 @@ function refreshProfileStats() { updateStats(); }
 // ===== Export Entries =====
 function renderExportList() {
   exportList.innerHTML = '';
-  Object.keys(entries).forEach(key => {
+  const userEntries = window.entries || {};
+  Object.keys(userEntries).forEach(key => {
     const div = document.createElement('div');
     div.style.marginBottom = '6px';
     div.innerHTML = `
       <label style="color:#d94f87;">
         <input type="checkbox" class="exportCheck" data-key="${key}">
-        ${key} - ${entries[key].substring(0, 40)}${entries[key].length > 40 ? '...' : ''}
+        ${key} - ${userEntries[key].substring(0, 40)}${userEntries[key].length > 40 ? '...' : ''}
       </label>
     `;
     exportList.appendChild(div);
@@ -222,6 +223,7 @@ exportBtn.addEventListener('click', async () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let yOffset = 20;
+  const userEntries = window.entries || {};
   const checkedEntries = document.querySelectorAll('.exportCheck:checked');
   if (checkedEntries.length === 0) return alert('Please select at least one entry.');
 
@@ -234,7 +236,7 @@ exportBtn.addEventListener('click', async () => {
 
     doc.setFontSize(12);
     doc.setTextColor(0,0,0);
-    const splitText = doc.splitTextToSize(entries[key], 170);
+    const splitText = doc.splitTextToSize(userEntries[key], 170);
     doc.text(splitText, 20, yOffset);
     yOffset += splitText.length * 7 + 10;
 
