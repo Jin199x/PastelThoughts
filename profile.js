@@ -266,58 +266,75 @@ saveNameBtn.addEventListener("click", async () => {
   alert("Name updated successfully!");
 });
 
+// === dailies task ===
 
-// ===== Stats calculation & save =====
-function computeStreak(entriesObj) {
-  const daySet = new Set();
+const dailyThoughts = [
+  "Share one thing you're grateful for today.",
+  "Write about a small victory you had today.",
+  "Describe a moment that made you smile.",
+  "What's one thing you learned today?",
+  "Reflect on a challenge you overcame recently.",
+  "Share a goal you want to achieve this week.",
+  "Write a kind message to yourself.",
+  "Describe something beautiful you noticed today.",
+  "Recall a favorite memory and why it matters.",
+  "Share a quote that inspires you.",
+  "Write about a person who motivates you.",
+  "Describe a place that makes you feel calm.",
+  "Reflect on something you accomplished today.",
+  "What's one thing you want to improve?",
+  "Share a funny or silly moment from today.",
+  "Write about a book, show, or movie that inspired you.",
+  "Describe a moment of peace you experienced.",
+  "Share a random act of kindness you did.",
+  "Write about something you want to try tomorrow.",
+  "Reflect on a recent conversation that mattered.",
+  "Share a song that fits your mood today.",
+  "Write about a creative idea you had.",
+  "Describe a hobby you enjoyed recently.",
+  "Share one thing that made you proud today.",
+  "Reflect on a recent learning experience.",
+  "Write about a moment you felt connected to someone.",
+  "Share a small act of self-care you did today.",
+  "Describe something that made your day easier.",
+  "Write a message to your future self."
+];
 
-  Object.keys(entriesObj || {}).forEach(k => {
-    const d = new Date(k);
-    if (!isNaN(d)) daySet.add(toDateKey(d));
-  });
+async function updateDailyThought() {
+  if (!currentUser) return;
 
-  const dayArr = Array.from(daySet).sort((a, b) => new Date(b) - new Date(a));
+  const userRef = doc(db, "users", currentUser.uid);
+  const userSnap = await getDoc(userRef);
+  let todayKey = toDateKey(new Date());
+  let dailyThought = "";
 
-  if (dayArr.length === 0) return { streak: 0, total: 0 };
-
-  let streak = 0;
-  let expected = new Date(dayArr[0]);
-
-  while (true) {
-    const expectedKey = toDateKey(expected);
-    if (dayArr.includes(expectedKey)) {
-      streak++;
-      expected.setDate(expected.getDate() - 1);
+  if (userSnap.exists()) {
+    const data = userSnap.data();
+    if (data.dailyThought && data.dailyThought.date === todayKey) {
+      dailyThought = data.dailyThought.text;
     } else {
-      break;
+      // Pick new random thought
+      const index = Math.floor(Math.random() * dailyThoughts.length);
+      dailyThought = dailyThoughts[index];
+      await setDoc(userRef, { dailyThought: { date: todayKey, text: dailyThought } }, { merge: true });
     }
+  } else {
+    const index = Math.floor(Math.random() * dailyThoughts.length);
+    dailyThought = dailyThoughts[index];
+    await setDoc(userRef, { dailyThought: { date: todayKey, text: dailyThought } }, { merge: true });
   }
 
-  return { streak, total: dayArr.length };
-}
+  const dailyEl = document.getElementById("dailyThoughtEl");
+  if (dailyEl) dailyEl.textContent = dailyThought;
 
-async function updateStatsAndSave() {
-  const userEntries = window.entries || {};
-  const { streak, total } = computeStreak(userEntries);
-
-  if (streakCountEl) streakCountEl.textContent = streak;
+  // Update total entries
+  const total = Object.keys(window.entries || {}).length;
   if (totalEntriesEl) totalEntriesEl.textContent = total;
-
-  try {
-    const userDocRef = doc(db, "users", window.currentUser.uid);
-    await setDoc(
-      userDocRef,
-      { streak: streak, totalEntries: total },
-      { merge: true }
-    );
-  } catch (e) {
-    console.warn("Failed to save stats:", e);
-  }
 }
 
-function refreshProfileStats() {
-  updateStatsAndSave();
-}
+// Call this after entries are loaded
+updateDailyThought();
+
 
 
 // ===== Refresh function =====
@@ -423,6 +440,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
