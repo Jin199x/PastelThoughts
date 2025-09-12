@@ -247,6 +247,8 @@ if (saveNameBtn) {
     if (!newName) return alert("Name cannot be empty!");
     const userDocRef = doc(db, "users", window.currentUser.uid);
     await setDoc(userDocRef, { name: newName }, { merge: true });
+    profileNameInput.placeholder = newName;
+    profileNameInput.value = "";
     alert("Name updated successfully!");
   });
 }
@@ -384,3 +386,4 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
