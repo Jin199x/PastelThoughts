@@ -1,3 +1,15 @@
+// ===== Theme Selector Logic =====
+const themeButtons = document.querySelectorAll(".theme-btn");
+const body = document.body;
+
+themeButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const selectedTheme = btn.dataset.theme;
+    body.classList.remove("theme-pink", "theme-blue", "theme-dark", "theme-lavender");
+    body.classList.add(selectedTheme);
+  });
+});
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) return window.location.href = 'index.html';
   currentUser = user;
@@ -18,18 +30,6 @@ onAuthStateChanged(auth, async (user) => {
   await renderExportList();
 });
 
-
-// ===== Theme Selector Logic =====
-const themeButtons = document.querySelectorAll(".theme-btn");
-const body = document.body;
-
-themeButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const selectedTheme = btn.dataset.theme;
-    body.classList.remove("theme-pink", "theme-blue", "theme-dark", "theme-lavender");
-    body.classList.add(selectedTheme);
-  });
-});
 // ====== Load saved profile picture from Firestore =====
 async function loadProfilePic() {
   try {
@@ -345,6 +345,7 @@ function refreshProfileStats() {
 loadEntries().then(() => {
   refreshProfileStats();
 });
+
 
 
 
