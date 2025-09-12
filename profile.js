@@ -250,5 +250,39 @@ exportBtn.addEventListener('click', async () => {
   doc.save('PastelThoughtsDiary.pdf');
 });
 
+// ====== User Info Section ======
+const profileNameInput = document.getElementById("profileName"); // input field for name
+const profileEmail = document.getElementById("profileEmail"); // element to display email
+const saveNameBtn = document.getElementById("saveNameBtn"); // button to save name changes
+
+// Load user info from Firestore
+async function loadUserInfo() {
+  if (!currentUser) return;
+
+  // Email from Firebase Auth
+  profileEmail.textContent = currentUser.email;
+
+  // Name from Firestore
+  const userDocRef = doc(db, "users", currentUser.uid);
+  const userSnap = await getDoc(userDocRef);
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+    profileNameInput.value = userData.name || ""; // default empty if no name yet
+  }
+}
+
+// Save updated name to Firestore
+saveNameBtn.addEventListener("click", async () => {
+  const newName = profileNameInput.value.trim();
+  if (!newName) return alert("Name cannot be empty!");
+
+  const userDocRef = doc(db, "users", currentUser.uid);
+  await setDoc(userDocRef, { name: newName }, { merge: true });
+  alert("Name updated successfully!");
+});
+
+// Call this function when profile section is shown
+loadUserInfo();
+
 
 
