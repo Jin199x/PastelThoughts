@@ -58,17 +58,28 @@ let allSelected = false;
 onAuthStateChanged(auth, async (user) => {
   if (!user) return window.location.href = 'index.html';
 
-  // Use currentUser from diary.js if available
   window.currentUser = user;
 
-  // Wait for diary.js entries to load
-  if (window.loadEntries) await window.loadEntries();
+  const userDocRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userDocRef);
 
+  // 👇 Create default fields if this is a new user
+  if (!userSnap.exists()) {
+    await setDoc(userDocRef, {
+      name: "",
+      profilePic: "",
+      entries: {},
+      streak: 0
+    });
+  }
+
+  if (window.loadEntries) await window.loadEntries();
   await loadProfilePic();
   await loadUserInfo();
   refreshProfileStats();
   renderExportList();
 });
+
 
 // ===== Load Profile Picture =====
 async function loadProfilePic() {
@@ -290,5 +301,6 @@ exportBtn.addEventListener('click', async () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
 
 
