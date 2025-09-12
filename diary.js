@@ -148,6 +148,8 @@ calendarEntry.style.marginTop = "20px";
 calendarSection.appendChild(calendarEntry);
 
 function renderCalendar(date) {
+  if (!window.entries) return; // safety check
+
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -155,9 +157,7 @@ function renderCalendar(date) {
   calendarGrid.innerHTML = "";
   calendarMonth.textContent = date.toLocaleString("default", { month: "long" }) + " " + year;
 
-  const today = new Date();
-  today.setHours(0,0,0,0); // normalize
-
+  const todayKey = toDateKey(new Date()); // current date for blocking future
   for (let i = 0; i < firstDay; i++) {
     const emptyCell = document.createElement("div");
     emptyCell.classList.add("calendar-cell", "empty");
@@ -168,34 +168,32 @@ function renderCalendar(date) {
     const cell = document.createElement("div");
     cell.classList.add("calendar-cell");
     cell.textContent = day;
+
     const key = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-    cell.dataset.date = key; // add data-date attribute
 
-    if (entries[key]) cell.classList.add("has-entry");
+    if (window.entries[key]) cell.classList.add("has-entry");
 
-    const cellDate = new Date(year, month, day);
-    cellDate.setHours(0,0,0,0);
-
-    if (cellDate > today) {
-      // Future date: disable click
-      cell.classList.add("disabled");
-      cell.style.cursor = "not-allowed";
-    } else {
-      // Only allow past/today dates to open entry
-      cell.onclick = () => showCalendarEntry(key, day, month, year);
-    }
+    cell.onclick = () => {
+      // block future dates
+      if (key > todayKey) return alert("You cannot add entries for future dates!");
+      showCalendarEntry(key, day, month, year);
+    };
 
     calendarGrid.appendChild(cell);
   }
 }
 
-
 function showCalendarEntry(key, day, month, year) {
+  if (!window.entries) return;
+
   calendarEntry.style.display = "block";
+  const todayKey = toDateKey(new Date());
+  const isFuture = key > todayKey;
+
   let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>`;
 
-  if (entries[key]) {
-    // Display the entry only, no buttons
+  if (window.entries[key]) {
+    // display existing entry
     html += `
       <div id="calendarEntryCard" style="
         border: 1px solid #d94f87; 
@@ -205,25 +203,38 @@ function showCalendarEntry(key, day, month, year) {
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         cursor:pointer;
       ">
-        <p id="calendarEntryText" style="white-space:pre-wrap; margin:0;">${entries[key]}</p>
+        <p id="calendarEntryText" style="white-space:pre-wrap; margin:0;">${window.entries[key]}</p>
         <small style="color:#888; display:block; margin-top:6px;">Click to edit</small>
       </div>
     `;
-  } else {
-    // Empty entry: directly show textarea
+  } else if (!isFuture) {
+    // empty entry only if not future
     html += `<textarea id="newCalendarEntry" placeholder="Write something..." style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
              <button id="saveCalendarBtn" class="save-btn" style="margin-top:10px;">Save</button>`;
+  } else {
+    html += `<p style="color:#888;">Cannot add entries for future dates.</p>`;
   }
 
   calendarEntry.innerHTML = html;
 
-  // If the card exists, clicking it will show edit/delete buttons
+  const saveBtnCal = document.getElementById("saveCalendarBtn");
+  if (saveBtnCal) saveBtnCal.onclick = async () => {
+    const text = document.getElementById("newCalendarEntry").value;
+    if (!text) return alert("Cannot save empty entry!");
+    await saveEntryToFirebase(key, text);
+    alert("Entry saved!");
+    renderPastEntries();
+    renderCalendar(currentDate);
+    calendarEntry.style.display = "none";
+    renderExportList();
+  };
+
   const entryCard = document.getElementById("calendarEntryCard");
-  if (entryCard) {
+  if (entryCard && !isFuture) {
     entryCard.onclick = () => {
       calendarEntry.innerHTML = `
         <h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>
-        <textarea id="editEntryTextarea" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${entries[key]}</textarea>
+        <textarea id="editEntryTextarea" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${window.entries[key]}</textarea>
         <div style="margin-top:10px; display:flex; gap:10px;">
           <button id="saveEditBtn" class="save-btn">Save</button>
           <button id="cancelEditBtn" class="save-btn" style="background:#aaa;">Cancel</button>
@@ -256,33 +267,20 @@ function showCalendarEntry(key, day, month, year) {
       };
     };
   }
-
-  // Save new entry
-  const saveBtnCal = document.getElementById("saveCalendarBtn");
-  if (saveBtnCal) saveBtnCal.onclick = async () => {
-    const text = document.getElementById("newCalendarEntry").value;
-    if (!text) return alert("Cannot save empty entry!");
-    await saveEntryToFirebase(key, text);
-    alert("Entry saved!");
-    renderPastEntries();
-    renderCalendar(currentDate);
-    calendarEntry.style.display = "none";
-    renderExportList();
-  };
 }
-
 
 // ====== Month Navigation ======
 prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(currentDate); };
 nextMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(currentDate); };
 
-// ====== Hide Sections / Navigation ======
+// ====== Navigation ======
 function hideAllSections() { document.querySelectorAll(".view").forEach(s => s.style.display = "none"); }
 todayBtn.onclick = () => { hideAllSections(); timeline.style.display='flex'; document.getElementById('editor').style.display='flex'; };
 calendarBtn.onclick = () => { hideAllSections(); calendarSection.style.display='flex'; renderCalendar(currentDate); };
 profileBtn.onclick = () => { hideAllSections(); profileSection.style.display='flex'; };
 backBtn.onclick = () => { hideAllSections(); timeline.style.display='flex'; document.getElementById('editor').style.display='flex'; };
 logoutBtn.onclick = async () => { await signOut(auth); window.location.href='index.html'; };
+
 
 
 // ====== Today Button ======
@@ -362,6 +360,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
