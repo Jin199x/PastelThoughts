@@ -241,20 +241,53 @@ async function loadUserInfo() {
   }
 }
 
+function getTimeBasedGreeting(name) {
+  const now = new Date();
+  const hour = now.getHours();
+
+  if (hour >= 5 && hour < 12) return `Good morning, ${name}!`;
+  if (hour >= 12 && hour < 17) return `Good afternoon, ${name}!`;
+  if (hour >= 17 && hour < 21) return `Good evening, ${name}!`;
+  return `Hello, ${name}!`;
+}
+
+// On page load
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    window.currentUser = user;
+
+    const userDocRef = doc(db, "users", window.currentUser.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+      const savedName = docSnap.data().name || "User";
+
+      // Update sidebar greeting dynamically
+      document.getElementById("welcomeSidebar").textContent = getTimeBasedGreeting(savedName);
+
+      // Update input placeholder
+      profileNameInput.placeholder = savedName;
+    }
+  }
+});
+
+// When user saves a new name
 saveNameBtn.addEventListener("click", async () => {
   const newName = profileNameInput.value.trim();
   if (!newName) return alert("Name cannot be empty!");
 
   const userDocRef = doc(db, "users", window.currentUser.uid);
-
-  // 👇 merge: true means it just updates this one field
   await setDoc(userDocRef, { name: newName }, { merge: true });
 
-  // Update UI
   profileNameInput.placeholder = newName;
   profileNameInput.value = "";
+
+  // Update greeting immediately
+  document.getElementById("welcomeSidebar").textContent = getTimeBasedGreeting(newName);
+
   alert("Name updated successfully!");
 });
+
 
 // ===== Stats calculation & save =====
 function computeStreak(entriesObj) {
@@ -389,6 +422,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
