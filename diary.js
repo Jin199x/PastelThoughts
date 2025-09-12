@@ -58,6 +58,15 @@ async function saveEntryToFirebase(dateKey, text) {
 async function deleteEntryFromFirebase(dateKey) {
   if (!window.currentUser) return;
   const userRef = doc(db, "users", window.currentUser.uid);
+
+  // Make sure the document exists
+  const docSnap = await getDoc(userRef);
+  if (!docSnap.exists()) {
+    // Nothing to delete
+    return;
+  }
+
+  // Delete the specific entry
   await updateDoc(userRef, {
     [`entries.${dateKey}`]: deleteField()
   });
@@ -363,6 +372,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
