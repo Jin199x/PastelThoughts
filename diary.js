@@ -47,31 +47,33 @@ onAuthStateChanged(auth, user => {
 });
 
 // ====== Save / Delete Entry Functions (Firestore only) ======
-// in-memory entries cache
-let entries = {};
-
-// ====== Save Entry ======
 async function saveEntryToFirebase(dateKey, text) {
   if (!currentUser) return;
 
-  // Update in-memory entries
-  entries[dateKey] = text;
+  // Load current entries from Firestore
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const currentEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
 
-  // Push to Firestore
-  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+  // Update the entry
+  currentEntries[dateKey] = text;
+
+  // Push back to Firestore
+  await setDoc(doc(db, "users", currentUser.uid), { entries: currentEntries }, { merge: true });
 }
 
-// ====== Delete Entry ======
 async function deleteEntryFromFirebase(dateKey) {
   if (!currentUser) return;
 
-  // Remove from in-memory entries
-  delete entries[dateKey];
+  // Load current entries from Firestore
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const currentEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
 
-  // Push to Firestore
-  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+  // Remove the entry
+  delete currentEntries[dateKey];
+
+  // Push back to Firestore
+  await setDoc(doc(db, "users", currentUser.uid), { entries: currentEntries }, { merge: true });
 }
-
 
 // ====== Render Past Entries ======
 async function renderPastEntries() {
@@ -371,6 +373,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
