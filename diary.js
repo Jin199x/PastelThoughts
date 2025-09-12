@@ -351,34 +351,41 @@ const sidebar = document.querySelector('.sidebar');
 const mainContent = document.querySelector('.main-content');
 
 function handleScroll() {
-  const scrollTop = mainContent.scrollTop;
-  const isMobile = window.innerWidth <= 992; // mobile/tablet breakpoint
-
+  const isMobile = window.innerWidth <= 992; // only for mobile/tablet
   if (!isMobile) {
-    // Reset sidebar in case resized from mobile to desktop
+    // Ensure sidebar is visible on desktop
     sidebar.style.transform = 'translate(0,0)';
     return;
   }
 
+  const scrollTop = mainContent.scrollTop;
+
   if (scrollTop > lastScrollTop) {
-    // Scrolling down → hide
+    // Scrolling down → hide sidebar/header
     sidebar.style.transform = 'translateY(-100%)';
   } else {
-    // Scrolling up → show
+    // Scrolling up → show sidebar/header
     sidebar.style.transform = 'translateY(0)';
   }
 
   lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
 }
 
-// Listen to scroll
-mainContent.addEventListener('scroll', handleScroll);
+// Only add scroll listener if on mobile/tablet
+function initScrollListener() {
+  if (window.innerWidth <= 992) {
+    mainContent.addEventListener('scroll', handleScroll);
+  } else {
+    mainContent.removeEventListener('scroll', handleScroll);
+    sidebar.style.transform = 'translate(0,0)';
+  }
+}
 
-// Optional: update on window resize
-window.addEventListener('resize', () => {
-  if (window.innerWidth > 992) sidebar.style.transform = 'translate(0,0)';
-});
+// Init
+initScrollListener();
 
+// Update on window resize
+window.addEventListener('resize', initScrollListener);
 
 
 
