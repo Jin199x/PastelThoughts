@@ -1,7 +1,7 @@
 // ====== Firebase Setup ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
@@ -48,21 +48,13 @@ onAuthStateChanged(auth, user => {
 
 // ====== Save / Delete Entry Functions (Firestore only) ======
 async function saveEntryToFirebase(dateKey, text) {
-  if (!window.currentUser) return;
-  const userRef = doc(db, "users", window.currentUser.uid);
-
-  await setDoc(userRef, {
-    [`entries.${dateKey}`]: text
-  }, { merge: true }); // merge ensures existing entries are preserved
+  entries[dateKey] = text;
+  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
 }
 
 async function deleteEntryFromFirebase(dateKey) {
-  if (!window.currentUser) return;
-  const userRef = doc(db, "users", window.currentUser.uid);
-
-  await setDoc(userRef, {
-    [`entries.${dateKey}`]: deleteField()
-  }, { merge: true }); // merge ensures the field is deleted without affecting others
+  delete entries[dateKey];
+  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
 }
 
 
@@ -364,6 +356,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
