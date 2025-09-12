@@ -1,3 +1,22 @@
+// ===== Firebase Imports =====
+import { 
+  getAuth, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  setDoc 
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// ===== Firebase Init (reuse from diary.js) =====
+import { app } from "./diary.js"; 
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
 // ===== Theme Selector Logic =====
 const themeButtons = document.querySelectorAll(".theme-btn");
 const body = document.body;
@@ -271,4 +290,5 @@ exportBtn.addEventListener('click', async () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
 
