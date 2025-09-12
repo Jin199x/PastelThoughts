@@ -141,24 +141,40 @@ const searchExport = document.getElementById('searchExport');
 const toggleSelectBtn = document.getElementById('toggleSelectBtn');
 const exportBtn = document.getElementById('exportBtn');
 
-let allSelected = false;
+let allSelected = false; // toggle state
 
-function renderExportList() {
+// Fetch user entries from Firestore and render
+async function renderExportList() {
   exportList.innerHTML = '';
-  Object.keys(entries).forEach(key => {
-    const div = document.createElement('div');
-    div.style.marginBottom = '6px';
-    div.innerHTML = `
-      <label style="color:#d94f87;">
-        <input type="checkbox" class="exportCheck" data-key="${key}">
-        ${key} - ${entries[key].substring(0, 40)}${entries[key].length > 40 ? '...' : ''}
-      </label>
-    `;
-    exportList.appendChild(div);
-  });
+
+  try {
+    const userDocRef = doc(db, "users", currentUser.uid);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return;
+
+    const userData = userSnap.data();
+    const userEntries = userData.entries || {}; // ensure entries exist
+
+    Object.keys(userEntries).forEach(key => {
+      const div = document.createElement('div');
+      div.style.marginBottom = '6px';
+      div.innerHTML = `
+        <label style="color:#d94f87;">
+          <input type="checkbox" class="exportCheck" data-key="${key}">
+          ${key} - ${userEntries[key].substring(0, 40)}${userEntries[key].length > 40 ? '...' : ''}
+        </label>
+      `;
+      exportList.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Failed to fetch entries for export:", err);
+  }
 }
+
+// Initial render
 renderExportList();
 
+// Search/filter functionality
 searchExport.addEventListener('input', () => {
   const query = searchExport.value.toLowerCase();
   document.querySelectorAll('#exportList div').forEach(div => {
@@ -166,16 +182,24 @@ searchExport.addEventListener('input', () => {
   });
 });
 
+// Toggle Select All / Deselect All
 toggleSelectBtn.addEventListener('click', () => {
   allSelected = !allSelected;
   document.querySelectorAll('.exportCheck').forEach(cb => cb.checked = allSelected);
   toggleSelectBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
 });
 
-exportBtn.addEventListener('click', () => {
+// Export to PDF
+exportBtn.addEventListener('click', async () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let yOffset = 20;
+
+  // Fetch latest entries before export
+  const userDocRef = doc(db, "users", currentUser.uid);
+  const userSnap = await getDoc(userDocRef);
+  if (!userSnap.exists()) return alert("No entries found to export.");
+  const userEntries = userSnap.data().entries || {};
 
   const checkedEntries = document.querySelectorAll('.exportCheck:checked');
   if (checkedEntries.length === 0) {
@@ -185,15 +209,15 @@ exportBtn.addEventListener('click', () => {
 
   checkedEntries.forEach(checkbox => {
     const key = checkbox.dataset.key;
-    if (entries[key]) {
+    if (userEntries[key]) {
       doc.setFontSize(14);
-      doc.setTextColor(200, 50, 135);
+      doc.setTextColor(200, 50, 135); // pink for date
       doc.text(key, 20, yOffset);
       yOffset += 8;
 
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
-      const splitText = doc.splitTextToSize(entries[key], 170);
+      const splitText = doc.splitTextToSize(userEntries[key], 170);
       doc.text(splitText, 20, yOffset);
       yOffset += splitText.length * 7 + 10;
 
@@ -206,3 +230,5 @@ exportBtn.addEventListener('click', () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
+
