@@ -48,10 +48,12 @@ onAuthStateChanged(auth, user => {
 
 // ====== Save / Delete Entry Functions (Firestore only) ======
 async function saveEntryToFirebase(dateKey, text) {
-  entries[dateKey] = text;
-  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+  if (!window.currentUser) return;
+  const userRef = doc(db, "users", window.currentUser.uid);
+  await updateDoc(userRef, {
+    [`entries.${dateKey}`]: text
+  });
 }
-
 async function deleteEntryFromFirebase(dateKey) {
   delete entries[dateKey];
   await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
@@ -356,6 +358,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
