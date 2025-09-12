@@ -241,20 +241,20 @@ async function loadUserInfo() {
   }
 }
 
-const profileNameInput = document.getElementById("profileNameInput");
-const saveNameBtn = document.getElementById("saveNameBtn");
+saveNameBtn.addEventListener("click", async () => {
+  const newName = profileNameInput.value.trim();
+  if (!newName) return alert("Name cannot be empty!");
 
-if (saveNameBtn) {
-  saveNameBtn.addEventListener("click", async () => {
-    const newName = profileNameInput.value.trim();
-    if (!newName) return alert("Name cannot be empty!");
+  const userDocRef = doc(db, "users", window.currentUser.uid);
 
-    const userDocRef = doc(db, "users", window.currentUser.uid);
-    await setDoc(userDocRef, { name: newName }, { merge: true });
-    profileNameInput.value = newName; 
-    alert("Name updated successfully!");
-  });
-}
+  // 👇 merge: true means it just updates this one field
+  await setDoc(userDocRef, { name: newName }, { merge: true });
+
+  // Update UI
+  profileNameInput.placeholder = newName;
+  profileNameInput.value = "";
+  alert("Name updated successfully!");
+});
 
 // ===== Stats calculation & save =====
 function computeStreak(entriesObj) {
@@ -389,6 +389,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
