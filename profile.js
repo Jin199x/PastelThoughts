@@ -250,24 +250,23 @@ exportBtn.addEventListener('click', async () => {
   doc.save('PastelThoughtsDiary.pdf');
 });
 
-// ====== User Info Section ======
-const profileNameInput = document.getElementById("profileName"); // input field for name
-const profileEmail = document.getElementById("profileEmail"); // element to display email
-const saveNameBtn = document.getElementById("saveNameBtn"); // button to save name changes
+const profileNameInput = document.getElementById("profileName");
+const profileEmail = document.getElementById("profileEmail");
+const saveNameBtn = document.getElementById("saveNameBtn");
 
-// Load user info from Firestore
+// Load user info from Firestore and Firebase Auth
 async function loadUserInfo() {
   if (!currentUser) return;
 
-  // Email from Firebase Auth
+  // Set email from Firebase Auth
   profileEmail.textContent = currentUser.email;
 
-  // Name from Firestore
+  // Fetch name from Firestore
   const userDocRef = doc(db, "users", currentUser.uid);
   const userSnap = await getDoc(userDocRef);
   if (userSnap.exists()) {
     const userData = userSnap.data();
-    profileNameInput.value = userData.name || ""; // default empty if no name yet
+    profileNameInput.value = userData.name || "";
   }
 }
 
@@ -281,8 +280,50 @@ saveNameBtn.addEventListener("click", async () => {
   alert("Name updated successfully!");
 });
 
-// Call this function when profile section is shown
+// Call this whenever profile section is shown
 loadUserInfo();
+
+//== Stats Section ==
+const streakCountEl = document.getElementById("streakCount");
+const totalEntriesEl = document.getElementById("totalEntries");
+
+// Calculate streak & total entries
+function updateStats() {
+  const entryDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
+  const today = new Date();
+  let streak = 0;
+
+  if (entryDates.length > 0) {
+    let prevDate = new Date(entryDates[0]);
+
+    for (let i = 0; i < entryDates.length; i++) {
+      const entryDate = new Date(entryDates[i]);
+      const diff = Math.floor((prevDate - entryDate) / (1000 * 60 * 60 * 24));
+
+      if (i === 0 && (today.toDateString() === entryDate.toDateString() || diff === 1)) {
+        streak++;
+      } else if (diff === 1) {
+        streak++;
+      } else {
+        break;
+      }
+      prevDate = entryDate;
+    }
+  }
+
+  streakCountEl.textContent = streak;
+  totalEntriesEl.textContent = entryDates.length;
+}
+
+// Call this whenever entries are loaded or updated
+function refreshProfileStats() {
+  updateStats();
+}
+
+// Example: after loading entries from Firebase
+loadEntries().then(() => {
+  refreshProfileStats();
+});
 
 
 
