@@ -78,8 +78,21 @@ img.onload = () => {
   cropCanvas.height = Math.min(img.height, 300);
   cropCanvas.style.display = "block";
   applyCropBtn.style.display = "inline-block";
-  ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
+  drawCanvas(); // draw the initial image
 };
+
+function drawCanvas() {
+  // Draw the image
+  ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+  ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
+
+  // Draw cropping rectangle if dragging
+  if (cropRect.width && cropRect.height) {
+    ctx.strokeStyle = "#d94f87";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cropRect.x, cropRect.y, cropRect.width, cropRect.height);
+  }
+}
 
 function getPos(e) {
   const rect = cropCanvas.getBoundingClientRect();
@@ -87,21 +100,27 @@ function getPos(e) {
   let y = e.touches ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
   return { x, y };
 }
-function startDrag(e){ isDragging=true; const pos=getPos(e); startX=pos.x; startY=pos.y; }
-function drag(e){ 
-  if(!isDragging) return;
-  const pos=getPos(e);
-  cropRect.x=Math.min(startX,pos.x);
-  cropRect.y=Math.min(startY,pos.y);
-  cropRect.width=Math.abs(pos.x-startX);
-  cropRect.height=Math.abs(pos.y-startY);
-  ctx.clearRect(0,0,cropCanvas.width,cropCanvas.height);
-  ctx.drawImage(img,0,0,cropCanvas.width,cropCanvas.height);
-  ctx.strokeStyle="#d94f87";
-  ctx.lineWidth=2;
-  ctx.strokeRect(cropRect.x,cropRect.y,cropRect.width,cropRect.height);
+
+function startDrag(e) {
+  isDragging = true;
+  const pos = getPos(e);
+  startX = pos.x;
+  startY = pos.y;
 }
-function endDrag(){ isDragging=false; }
+
+function drag(e) {
+  if (!isDragging) return;
+  const pos = getPos(e);
+  cropRect.x = Math.min(startX, pos.x);
+  cropRect.y = Math.min(startY, pos.y);
+  cropRect.width = Math.abs(pos.x - startX);
+  cropRect.height = Math.abs(pos.y - startY);
+  drawCanvas(); // redraw with rectangle
+}
+
+function endDrag() {
+  isDragging = false;
+}
 
 cropCanvas.addEventListener("mousedown", startDrag);
 cropCanvas.addEventListener("mousemove", drag);
@@ -111,8 +130,10 @@ cropCanvas.addEventListener("touchstart", startDrag);
 cropCanvas.addEventListener("touchmove", drag);
 cropCanvas.addEventListener("touchend", endDrag);
 
+// Apply crop
 applyCropBtn.addEventListener("click", async () => {
   if (!cropRect.width || !cropRect.height) return;
+
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = cropRect.width;
   tempCanvas.height = cropRect.height;
@@ -124,6 +145,7 @@ applyCropBtn.addEventListener("click", async () => {
   );
 
   const base64Image = tempCanvas.toDataURL().split(",")[1];
+
   try {
     const form = new FormData();
     form.append("image", base64Image);
@@ -134,7 +156,6 @@ applyCropBtn.addEventListener("click", async () => {
       profilePic.src = imageUrl;
       const userDocRef = doc(db, "users", window.currentUser.uid);
       await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
-      await loadProfilePic();
       alert("Profile picture updated successfully!");
     } else alert("Failed to upload image.");
   } catch (err) {
@@ -145,7 +166,9 @@ applyCropBtn.addEventListener("click", async () => {
   cropCanvas.style.display = "none";
   applyCropBtn.style.display = "none";
   uploadPic.value = "";
+  cropRect = { x:0, y:0, width:0, height:0 };
 });
+
 
 // ===== User Info =====
 async function loadUserInfo() {
@@ -248,3 +271,4 @@ exportBtn.addEventListener('click', async () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
