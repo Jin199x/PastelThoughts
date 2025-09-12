@@ -251,23 +251,10 @@ if (saveNameBtn) {
 
     const userDocRef = doc(db, "users", window.currentUser.uid);
     await setDoc(userDocRef, { name: newName }, { merge: true });
-
+    profileNameInput.value = newName; 
     alert("Name updated successfully!");
   });
 }
-
-// Load name on page load
-async function loadUserInfo() {
-  if (!window.currentUser) return;
-  const userDocRef = doc(db, "users", window.currentUser.uid);
-  const userSnap = await getDoc(userDocRef);
-  if (userSnap.exists()) {
-    const userData = userSnap.data();
-    profileNameInput.value = userData.name || "";
-    profileEmail.textContent = window.currentUser.email || "";
-  }
-}
-
 
 // ===== Stats calculation & save =====
 function computeStreak(entriesObj) {
@@ -402,6 +389,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
