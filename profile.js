@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { 
   getFirestore, doc, getDoc, setDoc,
   collection, query, orderBy, getDocs 
+  onSnapshot   
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -59,14 +60,12 @@ async function loadEntries() {
   if (userSnap.exists()) {
     const userData = userSnap.data();
 
-    // 1) If user doc has "entries" as object { "2025-01-01T...": "text" }
     if (userData.entries && typeof userData.entries === "object" && Object.keys(userData.entries).length > 0) {
       Object.keys(userData.entries).forEach(k => {
         const v = userData.entries[k];
         entriesObj[k] = (typeof v === "string") ? v : (v.content || v.text || JSON.stringify(v));
       });
     } else {
-      // 2) Try reading docs from subcollection users/{uid}/entries
       try {
         const entriesCol = collection(db, "users", window.currentUser.uid, "entries");
         const q = query(entriesCol, orderBy("date", "desc"));
@@ -94,6 +93,20 @@ async function loadEntries() {
   await updateStatsAndSave();
 }
 window.loadEntries = loadEntries;
+
+// 👇 NEW: realtime listener
+function listenForEntries() {
+  if (!window.currentUser) return;
+  const userDocRef = doc(db, "users", window.currentUser.uid);
+
+  onSnapshot(userDocRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const userData = docSnap.data();
+      window.entries = userData.entries || {};
+      renderExportList(); // refresh UI immediately
+    }
+  });
+}
 
 // ===== Profile picture loader =====
 async function loadProfilePic() {
@@ -335,6 +348,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   await loadEntries();
+  listenForEntries(); // 👈 start real-time sync
   await loadProfilePic();
   await loadUserInfo();
   await refreshProfileStats();
