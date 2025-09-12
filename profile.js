@@ -1,40 +1,54 @@
-// ===== Firebase Imports =====
+// ====== Firebase Setup ======
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  collection,
-  getDocs,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// ===== Firebase Init (reuse from diary.js) =====
-import { app } from "./diary.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
+  authDomain: "pastelthoughts-19dd4.firebaseapp.com",
+  projectId: "pastelthoughts-19dd4",
+  messagingSenderId: "578642737437",
+  appId: "pastelthoughts-19dd4.web.app"
+};
+
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-document.addEventListener("DOMContentLoaded", () => {
-  // ===== DOM Elements =====
-  const profilePic = document.getElementById("profilePic");
-  const uploadPic = document.getElementById("uploadPic");
-  const cropCanvas = document.getElementById("cropCanvas");
-  const applyCropBtn = document.getElementById("applyCropBtn");
-  const ctx = cropCanvas.getContext("2d");
+// ====== DOM Elements ======
+const exportList = document.getElementById("exportList");
 
-  const profileNameInput = document.getElementById("profileName");
-  const profileEmail = document.getElementById("profileEmail");
-  const saveNameBtn = document.getElementById("saveNameBtn");
+// ====== Load User Entries ======
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return window.location.href = "index.html";
 
-  const streakCountEl = document.getElementById("streakCount");
-  const totalEntriesEl = document.getElementById("totalEntries");
+  const docRef = doc(db, "users", user.uid);
+  const docSnap = await getDoc(docRef);
 
-  const exportList = document.getElementById('exportList');
-  const searchExport = document.getElementById('searchExport');
-  const toggleSelectBtn = document.getElementById('toggleSelectBtn');
-  const exportBtn = document.getElementById('exportBtn');
+  if (docSnap.exists()) {
+    const entries = docSnap.data().entries || {};
+    renderExportList(entries);
+  } else {
+    exportList.innerHTML = "<p>No entries found.</p>";
+  }
+});
+// ====== Render Export List ======
+function renderExportList(entries) {
+  exportList.innerHTML = "<h3>Export Entries</h3>";
+
+  const sortedDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
+  sortedDates.forEach(dateKey => {
+    const entryValue = entries[dateKey];
+    const displayDate = new Date(dateKey).toLocaleDateString("en-US", { 
+      month: "short", day: "numeric", year: "numeric" 
+    });
+
+    const div = document.createElement("div");
+    div.classList.add("export-card");
+    div.innerHTML = `<strong>${displayDate}</strong><p>${entryValue}</p>`;
+    exportList.appendChild(div);
+  });
+}
 
   // theme buttons (kept from your code)
   const themeButtons = document.querySelectorAll(".theme-btn");
@@ -367,6 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 }); // DOMContentLoaded end
+
 
 
 
