@@ -327,7 +327,7 @@ async function updateStreakInFirebase() {
   await setDoc(userDocRef, { streak, totalEntries: total, longestStreak: longest }, { merge: true });
 
   // Optional: update UI
-  document.getElementById('currentStreak').textContent = `Current streak: ${streak} day(s)`;
+  document.getElementById('streakCountEl').textContent = `Current streak: ${streak} day(s)`;
   document.getElementById('longestStreak').textContent = `Longest streak: ${longest} day(s)`;
 }
 
@@ -428,6 +428,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
