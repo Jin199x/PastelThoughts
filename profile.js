@@ -38,11 +38,37 @@ const exportBtn = document.getElementById("exportBtn");
 // ====== Theme Switch ======
 const themeButtons = document.querySelectorAll(".theme-btn");
 const body = document.body;
+
+// Apply a theme to the page
+function applyTheme(theme) {
+  body.classList.remove("theme-pink", "theme-blue", "theme-dark", "theme-lavender");
+  body.classList.add(theme);
+}
+
+// Save selected theme to Firestore
+async function saveThemeToFirebase(theme) {
+  if (!window.currentUser) return;
+  const userRef = doc(db, "users", window.currentUser.uid);
+  await setDoc(userRef, { theme }, { merge: true });
+}
+
+// Load theme from Firestore
+async function loadThemeFromFirebase() {
+  if (!window.currentUser) return;
+  const userRef = doc(db, "users", window.currentUser.uid);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    const data = snap.data();
+    if (data.theme) applyTheme(data.theme);
+  }
+}
+
+// Button click event
 themeButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     const selectedTheme = btn.dataset.theme;
-    body.classList.remove("theme-pink", "theme-blue", "theme-dark", "theme-lavender");
-    body.classList.add(selectedTheme);
+    applyTheme(selectedTheme);
+    await saveThemeToFirebase(selectedTheme);
   });
 });
 
@@ -417,6 +443,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   // Load everything in sequence
+  await loadThemeFromFirebase();
   await loadEntries();          // populates window.entries
   await loadProfilePic();       // sets profilePic.src
   await loadUserInfo();         // sets profileNameInput.value
@@ -424,3 +451,4 @@ onAuthStateChanged(auth, async (user) => {
   listenForEntries();           // sets up real-time listener
   renderExportList();           // renders entries
 });
+
