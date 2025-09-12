@@ -152,6 +152,8 @@ function renderCalendar(date) {
   const month = date.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayKey = new Date().toISOString().split('T')[0];
+
   calendarGrid.innerHTML = "";
   calendarMonth.textContent = date.toLocaleString("default", { month: "long" }) + " " + year;
 
@@ -165,12 +167,23 @@ function renderCalendar(date) {
     const cell = document.createElement("div");
     cell.classList.add("calendar-cell");
     cell.textContent = day;
+
     const key = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
     if (entries[key]) cell.classList.add("has-entry");
-    cell.onclick = () => showCalendarEntry(key, day, month, year);
+
+    // Disable future dates
+    if (key > todayKey) {
+      cell.style.opacity = "0.5";
+      cell.style.cursor = "not-allowed";
+      cell.title = "You can only add entries for today or past dates";
+    } else {
+      cell.onclick = () => showCalendarEntry(key, day, month, year);
+    }
+
     calendarGrid.appendChild(cell);
   }
 }
+
 
 function showCalendarEntry(key, day, month, year) {
   calendarEntry.style.display = "block";
@@ -343,6 +356,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
