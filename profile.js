@@ -267,67 +267,58 @@ saveNameBtn.addEventListener("click", async () => {
 });
 
 
-// ===== Helper: normalize date to YYYY-MM-DD =====
-function toDateKey(date) {
-  const d = new Date(date);
-  d.setHours(0,0,0,0);
-  return d.toISOString().split('T')[0];
-}
-
-// ===== Compute streak and longest streak =====
-function computeStreak(entriesObj, previousLongest = 0) {
+// ===== Stats calculation & save =====
+function computeStreak(entriesObj) {
   const daySet = new Set();
+
   Object.keys(entriesObj || {}).forEach(k => {
     const d = new Date(k);
     if (!isNaN(d)) daySet.add(toDateKey(d));
   });
 
-  if (daySet.size === 0) return { streak: 0, total: 0, longest: previousLongest };
+  const dayArr = Array.from(daySet).sort((a, b) => new Date(b) - new Date(a));
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  if (dayArr.length === 0) return { streak: 0, total: 0 };
 
   let streak = 0;
-  let current = new Date(today);
+  let expected = new Date(dayArr[0]);
+
   while (true) {
-    const key = toDateKey(current);
-    if (daySet.has(key)) {
+    const expectedKey = toDateKey(expected);
+    if (dayArr.includes(expectedKey)) {
       streak++;
-      current.setDate(current.getDate() - 1);
-    } else break;
+      expected.setDate(expected.getDate() - 1);
+    } else {
+      break;
+    }
   }
 
-  const total = daySet.size;
-  const longest = Math.max(previousLongest, streak);
-
-  return { streak, total, longest };
+  return { streak, total: dayArr.length };
 }
 
-// ===== Update streak, longest streak, and total entries in Firestore & DOM =====
-async function updateStatsInFirebase() {
+async function updateStatsAndSave() {
   const userEntries = window.entries || {};
-  const userDocRef = doc(db, "users", window.currentUser.uid);
-  const userSnap = await getDoc(userDocRef);
-  const previousLongest = userSnap.exists() ? (userSnap.data().longestStreak || 0) : 0;
+  const { streak, total } = computeStreak(userEntries);
 
-  const { streak, total, longest } = computeStreak(userEntries, previousLongest);
+  if (streakCountEl) streakCountEl.textContent = streak;
+  if (totalEntriesEl) totalEntriesEl.textContent = total;
 
-  // Save everything in one call
-  await setDoc(userDocRef, { 
-    streak, 
-    totalEntries: total, 
-    longestStreak: longest 
-  }, { merge: true });
-
-  // Update HTML
-  const streakEl = document.getElementById('streakCountEl');
-  const longestEl = document.getElementById('longestStreak');
-  const totalEl = document.getElementById('totalEntriesEl');
-
-  if (streakEl) streakEl.textContent = streak;
-  if (longestEl) longestEl.textContent = longest;
-  if (totalEl) totalEl.textContent = total;
+  try {
+    const userDocRef = doc(db, "users", window.currentUser.uid);
+    await setDoc(
+      userDocRef,
+      { streak: streak, totalEntries: total },
+      { merge: true }
+    );
+  } catch (e) {
+    console.warn("Failed to save stats:", e);
+  }
 }
+
+function refreshProfileStats() {
+  updateStatsAndSave();
+}
+
 
 // ===== Refresh function =====
 function refreshStats() {
@@ -432,6 +423,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
