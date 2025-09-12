@@ -311,7 +311,7 @@ function renderExportList() {
   const userEntries = window.entries || {};
   const keys = Object.keys(userEntries).sort((a, b) => new Date(b) - new Date(a));
   keys.forEach(key => {
-    const displayDate = isNaN(new Date(key)) ? key : new Date(key).toLocaleString();
+    const displayDate = isNaN(new Date(key)) ? key : new Date(key).toDateString();
     const div = document.createElement('div');
     div.style.marginBottom = '6px';
     div.innerHTML = `
@@ -355,7 +355,7 @@ if (exportBtn) {
       const key = cb.dataset.key;
       doc.setFontSize(14);
       doc.setTextColor(200, 50, 135);
-      const displayDate = isNaN(new Date(key)) ? key : new Date(key).toLocaleDateString();
+      const displayDate = isNaN(new Date(key)) ? key : new Date(key).toDateString();
       doc.text(displayDate, 20, yOffset);
       yOffset += 8;
 
@@ -401,6 +401,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
