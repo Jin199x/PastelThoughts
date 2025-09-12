@@ -94,6 +94,29 @@ button:hover {
   transition: color 0.2s ease;
 }
 
+@media (max-width: 400px) {
+  .login-card {
+    padding: 25px 15px;
+  }
+
+  .login-card h1 {
+    font-size: 22px;
+  }
+
+  input, button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .links {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+
 .links a:hover {
   color: #ff3f7f;
 }
+
