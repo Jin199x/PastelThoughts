@@ -173,21 +173,32 @@ function renderCalendar(date) {
 
 function showCalendarEntry(key, day, month, year) {
   calendarEntry.style.display = "block";
-  let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>`;
+
+  // Add a wrapper div for styling the entry like a card
+  let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>
+              <div id="calendarEntryCard" style="
+                  border: 1px solid #d94f87;
+                  border-radius: 12px;
+                  padding: 15px;
+                  background: #fff0f5;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                  max-height: 250px;
+                  overflow-y: auto;
+                  margin-top: 10px;
+              ">`;
 
   if (entries[key]) {
-    // Show entry first (like Past Entries)
-    html += `<p id="calendarEntryText" style="white-space:pre-wrap;">${entries[key]}</p>
+    html += `<p id="calendarEntryText" style="white-space:pre-wrap; margin:0;">${entries[key]}</p>
              <div style="margin-top:10px; display:flex; gap:10px;">
                <button id="editCalendarEntryBtn" class="save-btn">Edit</button>
                <button id="deleteCalendarEntryBtn" class="save-btn" style="background:#ff4d6d;">Delete</button>
              </div>`;
   } else {
-    // Empty entry: directly show textarea
     html += `<textarea id="newCalendarEntry" placeholder="Write something..." style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
              <button id="saveCalendarBtn" class="save-btn" style="margin-top:10px;">Save</button>`;
   }
 
+  html += `</div>`; // close card div
   calendarEntry.innerHTML = html;
 
   // Save new entry
@@ -285,6 +296,7 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
 
