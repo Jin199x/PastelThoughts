@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { 
   getFirestore, doc, getDoc, setDoc,
-  collection, query, orderBy, getDocs, // 👈 FIXED missing comma
+  collection, query, orderBy, getDocs,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
@@ -12,7 +12,7 @@ const firebaseConfig = {
   authDomain: "pastelthoughts-19dd4.firebaseapp.com",
   projectId: "pastelthoughts-19dd4",
   messagingSenderId: "578642737437",
-  appId: "pastelthoughts-19dd4.web.app" // 👈 replace with real appId from Firebase console
+  appId: "pastelthoughts-19dd4.web.app" 
 };
 
 const app = initializeApp(firebaseConfig);
@@ -355,7 +355,7 @@ if (exportBtn) {
       const key = cb.dataset.key;
       doc.setFontSize(14);
       doc.setTextColor(200, 50, 135);
-      const displayDate = isNaN(new Date(key)) ? key : new Date(key).toLocaleString();
+      const displayDate = isNaN(new Date(key)) ? key : new Date(key).toLocaleDateString();
       doc.text(displayDate, 20, yOffset);
       yOffset += 8;
 
@@ -401,6 +401,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
