@@ -367,3 +367,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 }); // DOMContentLoaded end
+
+import { getEntries } from "./diary.js";
+
+// Example usage:
+const entries = getEntries();
+console.log("Entries from diary:", entries);
