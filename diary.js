@@ -350,19 +350,33 @@ let lastScrollTop = 0;
 const sidebar = document.querySelector('.sidebar');
 const mainContent = document.querySelector('.main-content');
 
-mainContent.addEventListener('scroll', function() {
-  const scrollTop = this.scrollTop;
-  const isMobile = window.innerWidth <= 992; // adjust breakpoint if needed
+function handleScroll() {
+  const scrollTop = mainContent.scrollTop;
+  const isMobile = window.innerWidth <= 992; // mobile/tablet breakpoint
+
+  if (!isMobile) {
+    // Reset sidebar in case resized from mobile to desktop
+    sidebar.style.transform = 'translate(0,0)';
+    return;
+  }
 
   if (scrollTop > lastScrollTop) {
     // Scrolling down → hide
-    sidebar.style.transform = isMobile ? 'translateY(-100%)' : 'translateX(-100%)';
+    sidebar.style.transform = 'translateY(-100%)';
   } else {
     // Scrolling up → show
-    sidebar.style.transform = 'translate(0,0)';
+    sidebar.style.transform = 'translateY(0)';
   }
 
-  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // mobile bounce fix
+  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+}
+
+// Listen to scroll
+mainContent.addEventListener('scroll', handleScroll);
+
+// Optional: update on window resize
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 992) sidebar.style.transform = 'translate(0,0)';
 });
 
 
