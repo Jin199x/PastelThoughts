@@ -3,8 +3,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { 
   getFirestore, doc, getDoc, setDoc,
-  collection, query, orderBy, getDocs 
-  onSnapshot   
+  collection, query, orderBy, getDocs, // 👈 FIXED missing comma
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -12,7 +12,7 @@ const firebaseConfig = {
   authDomain: "pastelthoughts-19dd4.firebaseapp.com",
   projectId: "pastelthoughts-19dd4",
   messagingSenderId: "578642737437",
-  appId: "pastelthoughts-19dd4.web.app"
+  appId: "pastelthoughts-19dd4.web.app" // 👈 replace with real appId from Firebase console
 };
 
 const app = initializeApp(firebaseConfig);
@@ -21,8 +21,21 @@ const db = getFirestore(app);
 
 // ====== DOM Elements ======
 const exportList = document.getElementById("exportList");
+const profilePic = document.getElementById("profilePic");
+const uploadPic = document.getElementById("uploadPic");
+const cropCanvas = document.getElementById("cropCanvas");
+const ctx = cropCanvas?.getContext("2d");
+const applyCropBtn = document.getElementById("applyCropBtn");
+const profileEmail = document.getElementById("profileEmail");
+const profileNameInput = document.getElementById("profileNameInput");
+const saveNameBtn = document.getElementById("saveNameBtn");
+const streakCountEl = document.getElementById("streakCountEl");
+const totalEntriesEl = document.getElementById("totalEntriesEl");
+const searchExport = document.getElementById("searchExport");
+const toggleSelectBtn = document.getElementById("toggleSelectBtn");
+const exportBtn = document.getElementById("exportBtn");
 
-// theme buttons (kept from your code)
+// ====== Theme Switch ======
 const themeButtons = document.querySelectorAll(".theme-btn");
 const body = document.body;
 themeButtons.forEach(btn => {
@@ -33,7 +46,7 @@ themeButtons.forEach(btn => {
   });
 });
 
-// cropping vars
+// ====== Cropping Vars ======
 let img = new Image();
 let isDragging = false;
 let startX = 0, startY = 0;
@@ -45,7 +58,7 @@ function toDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// ===== Load Entries from Firestore (supports two patterns) =====
+// ===== Load Entries from Firestore =====
 async function loadEntries() {
   if (!window.currentUser) {
     window.entries = {};
@@ -94,7 +107,7 @@ async function loadEntries() {
 }
 window.loadEntries = loadEntries;
 
-// 👇 NEW: realtime listener
+// ===== Real-time listener =====
 function listenForEntries() {
   if (!window.currentUser) return;
   const userDocRef = doc(db, "users", window.currentUser.uid);
@@ -103,12 +116,12 @@ function listenForEntries() {
     if (docSnap.exists()) {
       const userData = docSnap.data();
       window.entries = userData.entries || {};
-      renderExportList(); // refresh UI immediately
+      renderExportList();
     }
   });
 }
 
-// ===== Profile picture loader =====
+// ===== Profile Picture Loader =====
 async function loadProfilePic() {
   try {
     if (!window.currentUser) return;
@@ -116,30 +129,34 @@ async function loadProfilePic() {
     const userSnap = await getDoc(userDocRef);
     if (!userSnap.exists()) return;
     const userData = userSnap.data();
-    if (userData.profilePic) profilePic.src = userData.profilePic;
+    if (userData.profilePic && profilePic) profilePic.src = userData.profilePic;
   } catch (err) {
     console.error("Failed to load profile picture:", err);
   }
 }
 
 // ===== Upload & Crop Image =====
-uploadPic.addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (evt) => img.src = evt.target.result;
-  reader.readAsDataURL(file);
-});
+if (uploadPic) {
+  uploadPic.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => img.src = evt.target.result;
+    reader.readAsDataURL(file);
+  });
+}
 
 img.onload = () => {
+  if (!cropCanvas) return;
   cropCanvas.width = Math.min(img.width, 300);
   cropCanvas.height = Math.min(img.height, 300);
   cropCanvas.style.display = "block";
-  applyCropBtn.style.display = "inline-block";
+  if (applyCropBtn) applyCropBtn.style.display = "inline-block";
   drawCanvas();
 };
 
 function drawCanvas() {
+  if (!ctx || !cropCanvas) return;
   ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
   ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
   if (cropRect.width && cropRect.height) {
@@ -159,74 +176,80 @@ function startDrag(e) { isDragging = true; const pos = getPos(e); startX = pos.x
 function drag(e) { if (!isDragging) return; const pos = getPos(e); cropRect.x = Math.min(startX, pos.x); cropRect.y = Math.min(startY, pos.y); cropRect.width = Math.abs(pos.x - startX); cropRect.height = Math.abs(pos.y - startY); drawCanvas(); }
 function endDrag() { isDragging = false; }
 
-cropCanvas.addEventListener("mousedown", startDrag);
-cropCanvas.addEventListener("mousemove", drag);
-cropCanvas.addEventListener("mouseup", endDrag);
-cropCanvas.addEventListener("mouseleave", endDrag);
-cropCanvas.addEventListener("touchstart", startDrag);
-cropCanvas.addEventListener("touchmove", drag);
-cropCanvas.addEventListener("touchend", endDrag);
+if (cropCanvas) {
+  cropCanvas.addEventListener("mousedown", startDrag);
+  cropCanvas.addEventListener("mousemove", drag);
+  cropCanvas.addEventListener("mouseup", endDrag);
+  cropCanvas.addEventListener("mouseleave", endDrag);
+  cropCanvas.addEventListener("touchstart", startDrag);
+  cropCanvas.addEventListener("touchmove", drag);
+  cropCanvas.addEventListener("touchend", endDrag);
+}
 
-// ImgBB key (keep safe)
+// ImgBB key
 const IMGBB_API_KEY = "7ca937bbce3d1c452e27b7b18d04a451";
 
-applyCropBtn.addEventListener("click", async () => {
-  if (!cropRect.width || !cropRect.height) return;
+if (applyCropBtn) {
+  applyCropBtn.addEventListener("click", async () => {
+    if (!cropRect.width || !cropRect.height || !cropCanvas) return;
 
-  const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = cropRect.width;
-  tempCanvas.height = cropRect.height;
-  const tCtx = tempCanvas.getContext("2d");
-  tCtx.drawImage(
-    cropCanvas,
-    cropRect.x, cropRect.y, cropRect.width, cropRect.height,
-    0, 0, cropRect.width, cropRect.height
-  );
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = cropRect.width;
+    tempCanvas.height = cropRect.height;
+    const tCtx = tempCanvas.getContext("2d");
+    tCtx.drawImage(
+      cropCanvas,
+      cropRect.x, cropRect.y, cropRect.width, cropRect.height,
+      0, 0, cropRect.width, cropRect.height
+    );
 
-  const base64Image = tempCanvas.toDataURL().split(",")[1];
+    const base64Image = tempCanvas.toDataURL().split(",")[1];
 
-  try {
-    const form = new FormData();
-    form.append("image", base64Image);
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: form });
-    const data = await response.json();
-    if (data.success) {
-      const imageUrl = data.data.url;
-      profilePic.src = imageUrl;
-      const userDocRef = doc(db, "users", window.currentUser.uid);
-      await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
-      alert("Profile picture updated successfully!");
-    } else alert("Failed to upload image.");
-  } catch (err) {
-    console.error(err);
-    alert("Error uploading image.");
-  }
+    try {
+      const form = new FormData();
+      form.append("image", base64Image);
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: form });
+      const data = await response.json();
+      if (data.success) {
+        const imageUrl = data.data.url;
+        if (profilePic) profilePic.src = imageUrl;
+        const userDocRef = doc(db, "users", window.currentUser.uid);
+        await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
+        alert("Profile picture updated successfully!");
+      } else alert("Failed to upload image.");
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading image.");
+    }
 
-  cropCanvas.style.display = "none";
-  applyCropBtn.style.display = "none";
-  uploadPic.value = "";
-  cropRect = { x: 0, y: 0, width: 0, height: 0 };
-});
+    cropCanvas.style.display = "none";
+    applyCropBtn.style.display = "none";
+    uploadPic.value = "";
+    cropRect = { x: 0, y: 0, width: 0, height: 0 };
+  });
+}
 
 // ===== User Info load/save =====
 async function loadUserInfo() {
   if (!window.currentUser) return;
-  profileEmail.textContent = window.currentUser.email || "";
+  if (profileEmail) profileEmail.textContent = window.currentUser.email || "";
   const userDocRef = doc(db, "users", window.currentUser.uid);
   const userSnap = await getDoc(userDocRef);
-  if (userSnap.exists()) {
+  if (userSnap.exists() && profileNameInput) {
     const userData = userSnap.data();
     profileNameInput.value = userData.name || "";
   }
 }
 
-saveNameBtn.addEventListener("click", async () => {
-  const newName = profileNameInput.value.trim();
-  if (!newName) return alert("Name cannot be empty!");
-  const userDocRef = doc(db, "users", window.currentUser.uid);
-  await setDoc(userDocRef, { name: newName }, { merge: true });
-  alert("Name updated successfully!");
-});
+if (saveNameBtn) {
+  saveNameBtn.addEventListener("click", async () => {
+    const newName = profileNameInput.value.trim();
+    if (!newName) return alert("Name cannot be empty!");
+    const userDocRef = doc(db, "users", window.currentUser.uid);
+    await setDoc(userDocRef, { name: newName }, { merge: true });
+    alert("Name updated successfully!");
+  });
+}
 
 // ===== Stats calculation & save =====
 function computeStreak(entriesObj) {
@@ -253,8 +276,8 @@ function computeStreak(entriesObj) {
 async function updateStatsAndSave() {
   const userEntries = window.entries || {};
   const { streak, total } = computeStreak(userEntries);
-  streakCountEl.textContent = streak;
-  totalEntriesEl.textContent = total;
+  if (streakCountEl) streakCountEl.textContent = streak;
+  if (totalEntriesEl) totalEntriesEl.textContent = total;
   try {
     const userDocRef = doc(db, "users", window.currentUser.uid);
     await setDoc(userDocRef, { streak: streak, totalEntries: total }, { merge: true });
@@ -266,6 +289,7 @@ function refreshProfileStats() { updateStatsAndSave(); }
 
 // ===== Export Entries UI & PDF export =====
 function renderExportList() {
+  if (!exportList) return;
   exportList.innerHTML = '';
   const userEntries = window.entries || {};
   const keys = Object.keys(userEntries).sort((a, b) => new Date(b) - new Date(a));
@@ -284,49 +308,55 @@ function renderExportList() {
   refreshProfileStats();
 }
 
-searchExport.addEventListener('input', () => {
-  const query = searchExport.value.toLowerCase();
-  document.querySelectorAll('#exportList div').forEach(div => {
-    div.style.display = div.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+if (searchExport) {
+  searchExport.addEventListener('input', () => {
+    const query = searchExport.value.toLowerCase();
+    document.querySelectorAll('#exportList div').forEach(div => {
+      div.style.display = div.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+    });
   });
-});
+}
 
-toggleSelectBtn.addEventListener('click', () => {
-  allSelected = !allSelected;
-  document.querySelectorAll('.exportCheck').forEach(cb => cb.checked = allSelected);
-  toggleSelectBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
-});
-
-exportBtn.addEventListener('click', async () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let yOffset = 20;
-  const userEntries = window.entries || {};
-  const checkedEntries = document.querySelectorAll('.exportCheck:checked');
-  if (checkedEntries.length === 0) return alert('Please select at least one entry.');
-
-  checkedEntries.forEach(cb => {
-    const key = cb.dataset.key;
-    doc.setFontSize(14);
-    doc.setTextColor(200, 50, 135);
-    const displayDate = isNaN(new Date(key)) ? key : new Date(key).toLocaleString();
-    doc.text(displayDate, 20, yOffset);
-    yOffset += 8;
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    const splitText = doc.splitTextToSize(String(userEntries[key]), 170);
-    doc.text(splitText, 20, yOffset);
-    yOffset += splitText.length * 7 + 10;
-
-    if (yOffset > 280) {
-      doc.addPage();
-      yOffset = 20;
-    }
+if (toggleSelectBtn) {
+  toggleSelectBtn.addEventListener('click', () => {
+    allSelected = !allSelected;
+    document.querySelectorAll('.exportCheck').forEach(cb => cb.checked = allSelected);
+    toggleSelectBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
   });
+}
 
-  doc.save('PastelThoughtsDiary.pdf');
-});
+if (exportBtn) {
+  exportBtn.addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let yOffset = 20;
+    const userEntries = window.entries || {};
+    const checkedEntries = document.querySelectorAll('.exportCheck:checked');
+    if (checkedEntries.length === 0) return alert('Please select at least one entry.');
+
+    checkedEntries.forEach(cb => {
+      const key = cb.dataset.key;
+      doc.setFontSize(14);
+      doc.setTextColor(200, 50, 135);
+      const displayDate = isNaN(new Date(key)) ? key : new Date(key).toLocaleString();
+      doc.text(displayDate, 20, yOffset);
+      yOffset += 8;
+
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      const splitText = doc.splitTextToSize(String(userEntries[key]), 170);
+      doc.text(splitText, 20, yOffset);
+      yOffset += splitText.length * 7 + 10;
+
+      if (yOffset > 280) {
+        doc.addPage();
+        yOffset = 20;
+      }
+    });
+
+    doc.save('PastelThoughtsDiary.pdf');
+  });
+}
 
 // ===== Firebase Auth Listener =====
 onAuthStateChanged(auth, async (user) => {
@@ -348,7 +378,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   await loadEntries();
-  listenForEntries(); // 👈 start real-time sync
+  listenForEntries();
   await loadProfilePic();
   await loadUserInfo();
   await refreshProfileStats();
