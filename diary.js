@@ -52,6 +52,7 @@ async function loadEntries() {
   entries = docSnap.exists() ? docSnap.data().entries || {} : {};
   renderPastEntries();
   renderCalendar(currentDate);
+  renderExportList();
 }
 
 // ====== Save / Delete Entry Functions ======
@@ -291,6 +292,7 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
 
