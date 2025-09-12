@@ -320,10 +320,6 @@ function scheduleMidnightUpdate() {
 scheduleMidnightUpdate();
 
 
-// ====== Export for profile.js ======
-export function getEntries() {
-  return entries;
-}
 
 
 
