@@ -60,7 +60,7 @@ onAuthStateChanged(auth, async (user) => {
 
   window.currentUser = user;
 
-  const userDocRef = doc(db, "users", user.uid);
+  const userDocRef = doc(db, "users", currentUser.uid);
   const userSnap = await getDoc(userDocRef);
 
   // 👇 Create default fields if this is a new user
@@ -301,6 +301,7 @@ exportBtn.addEventListener('click', async () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
+
 
 
 
