@@ -515,20 +515,6 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   transition: transform 0.3s ease;
 }
 
-/* ====== Mobile/Tablet Header Fix ====== */
-@media (max-width: 992px) {
-  .sidebar {
-    position: fixed;   /* make it float above content */
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 999;
-  }
-
-  .main-content {
-    margin-top: 60px; /* give space for header (adjust to header height) */
-  }
-}
 
 
 
