@@ -267,31 +267,34 @@ saveNameBtn.addEventListener("click", async () => {
 });
 
 
+// ===== Helper: normalize date to YYYY-MM-DD =====
+function toDateKey(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  return d.toISOString().split('T')[0];
+}
 
-// ===== Stats calculation & save =====
+// ===== Compute streak and longest streak =====
 function computeStreak(entriesObj, previousLongest = 0) {
   const daySet = new Set();
   Object.keys(entriesObj || {}).forEach(k => {
     const d = new Date(k);
-    if (!isNaN(d)) daySet.add(toDateKey(d)); // normalize to YYYY-MM-DD
+    if (!isNaN(d)) daySet.add(toDateKey(d));
   });
 
   if (daySet.size === 0) return { streak: 0, total: 0, longest: previousLongest };
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // normalize
+  today.setHours(0,0,0,0);
 
   let streak = 0;
   let current = new Date(today);
-
   while (true) {
     const key = toDateKey(current);
     if (daySet.has(key)) {
       streak++;
       current.setDate(current.getDate() - 1);
-    } else {
-      break;
-    }
+    } else break;
   }
 
   const total = daySet.size;
@@ -300,36 +303,37 @@ function computeStreak(entriesObj, previousLongest = 0) {
   return { streak, total, longest };
 }
 
-async function updateStatsAndSave() {
+// ===== Update streak, longest streak, and total entries in Firestore & DOM =====
+async function updateStatsInFirebase() {
   const userEntries = window.entries || {};
-  const { streak, total } = computeStreak(userEntries);
-  if (streakCountEl) streakCountEl.textContent = streak;
-  if (totalEntriesEl) totalEntriesEl.textContent = total;
-  try {
-    const userDocRef = doc(db, "users", window.currentUser.uid);
-    await setDoc(userDocRef, { streak: streak, totalEntries: total }, { merge: true });
-  } catch (e) {
-    console.warn("Failed to save stats:", e);
-  }
-}
-function refreshProfileStats() { updateStatsAndSave(); }
-
-// == streak config ==
-async function updateStreakInFirebase() {
-  const userEntries = window.entries || {};
-  const userDocRef = doc(db, "users", currentUser.uid);
+  const userDocRef = doc(db, "users", window.currentUser.uid);
   const userSnap = await getDoc(userDocRef);
-
   const previousLongest = userSnap.exists() ? (userSnap.data().longestStreak || 0) : 0;
 
   const { streak, total, longest } = computeStreak(userEntries, previousLongest);
 
-  await setDoc(userDocRef, { streak, totalEntries: total, longestStreak: longest }, { merge: true });
+  // Save everything in one call
+  await setDoc(userDocRef, { 
+    streak, 
+    totalEntries: total, 
+    longestStreak: longest 
+  }, { merge: true });
 
-  // Optional: update UI
-  document.getElementById('streakCountEl').textContent = `Current streak: ${streak} day(s)`;
-  document.getElementById('longestStreak').textContent = `Longest streak: ${longest} day(s)`;
+  // Update HTML
+  const streakEl = document.getElementById('streakCountEl');
+  const longestEl = document.getElementById('longestStreak');
+  const totalEl = document.getElementById('totalEntriesEl');
+
+  if (streakEl) streakEl.textContent = streak;
+  if (longestEl) longestEl.textContent = longest;
+  if (totalEl) totalEl.textContent = total;
 }
+
+// ===== Refresh function =====
+function refreshStats() {
+  updateStatsInFirebase();
+}
+
 
 // ===== Export Entries UI & PDF export =====
 function renderExportList() {
@@ -428,6 +432,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
 
 
