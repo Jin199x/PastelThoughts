@@ -322,7 +322,6 @@ scheduleMidnightUpdate();
 // == Greeting ==
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    // Store current user
     window.currentUser = user;
 
     const userDocRef = doc(db, "users", window.currentUser.uid);
@@ -330,15 +329,13 @@ onAuthStateChanged(auth, async (user) => {
 
     if (docSnap.exists()) {
       const savedName = docSnap.data().name || "User";
-
-      // Update sidebar greeting
-      document.getElementById("welcomeSidebar").textContent = `Welcome, ${savedName}!`;
-
-      // Optional: also update the input placeholder
+      document.getElementById("welcomeSidebar").textContent = getTimeBasedGreeting(savedName);
       profileNameInput.placeholder = savedName;
     }
   }
 });
+
+
 
 
 
