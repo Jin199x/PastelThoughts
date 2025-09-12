@@ -51,17 +51,31 @@ async function saveEntryToFirebase(dateKey, text) {
   if (!currentUser) return;
   const userRef = doc(db, "users", currentUser.uid);
 
-  // Save the specific entry directly
-  await setDoc(userRef, { [`entries.${dateKey}`]: text }, { merge: true });
+  // Get existing entries
+  const docSnap = await getDoc(userRef);
+  const existingEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
+
+  // Update the entry
+  existingEntries[dateKey] = text;
+
+  // Save the updated entries object
+  await setDoc(userRef, { entries: existingEntries }, { merge: true });
 }
 
 async function deleteEntryFromFirebase(dateKey) {
   if (!currentUser) return;
   const userRef = doc(db, "users", currentUser.uid);
 
-  // Delete the specific entry
-  await setDoc(userRef, { [`entries.${dateKey}`]: deleteField() }, { merge: true });
+  const docSnap = await getDoc(userRef);
+  const existingEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
+
+  // Delete the entry
+  delete existingEntries[dateKey];
+
+  // Save back
+  await setDoc(userRef, { entries: existingEntries }, { merge: true });
 }
+
 
 // ====== Render Past Entries ======
 async function renderPastEntries() {
@@ -361,6 +375,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
