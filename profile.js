@@ -269,25 +269,35 @@ saveNameBtn.addEventListener("click", async () => {
 
 
 // ===== Stats calculation & save =====
-function computeStreak(entriesObj) {
+function computeStreak(entriesObj, previousLongest = 0) {
   const daySet = new Set();
   Object.keys(entriesObj || {}).forEach(k => {
     const d = new Date(k);
-    if (!isNaN(d)) daySet.add(toDateKey(d));
+    if (!isNaN(d)) daySet.add(toDateKey(d)); // normalize to YYYY-MM-DD
   });
-  const dayArr = Array.from(daySet).sort((a, b) => new Date(b) - new Date(a));
-  if (dayArr.length === 0) return { streak: 0, total: 0 };
+
+  if (daySet.size === 0) return { streak: 0, total: 0, longest: previousLongest };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize
 
   let streak = 0;
-  let expected = new Date(dayArr[0]);
+  let current = new Date(today);
+
   while (true) {
-    const expectedKey = toDateKey(expected);
-    if (dayArr.includes(expectedKey)) {
+    const key = toDateKey(current);
+    if (daySet.has(key)) {
       streak++;
-      expected.setDate(expected.getDate() - 1);
-    } else break;
+      current.setDate(current.getDate() - 1);
+    } else {
+      break;
+    }
   }
-  return { streak, total: dayArr.length };
+
+  const total = daySet.size;
+  const longest = Math.max(previousLongest, streak);
+
+  return { streak, total, longest };
 }
 
 async function updateStatsAndSave() {
@@ -303,6 +313,23 @@ async function updateStatsAndSave() {
   }
 }
 function refreshProfileStats() { updateStatsAndSave(); }
+
+// == streak config ==
+async function updateStreakInFirebase() {
+  const userEntries = window.entries || {};
+  const userDocRef = doc(db, "users", currentUser.uid);
+  const userSnap = await getDoc(userDocRef);
+
+  const previousLongest = userSnap.exists() ? (userSnap.data().longestStreak || 0) : 0;
+
+  const { streak, total, longest } = computeStreak(userEntries, previousLongest);
+
+  await setDoc(userDocRef, { streak, totalEntries: total, longestStreak: longest }, { merge: true });
+
+  // Optional: update UI
+  document.getElementById('currentStreak').textContent = `Current streak: ${streak} day(s)`;
+  document.getElementById('longestStreak').textContent = `Longest streak: ${longest} day(s)`;
+}
 
 // ===== Export Entries UI & PDF export =====
 function renderExportList() {
@@ -401,6 +428,8 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
+
 
 
 
