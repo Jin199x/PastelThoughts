@@ -173,33 +173,70 @@ function renderCalendar(date) {
 
 function showCalendarEntry(key, day, month, year) {
   calendarEntry.style.display = "block";
-
-  // Add a wrapper div for styling the entry like a card
-  let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>
-              <div id="calendarEntryCard" style="
-                  border: 1px solid #d94f87;
-                  border-radius: 12px;
-                  padding: 15px;
-                  background: #fff0f5;
-                  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                  max-height: 250px;
-                  overflow-y: auto;
-                  margin-top: 10px;
-              ">`;
+  let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>`;
 
   if (entries[key]) {
-    html += `<p id="calendarEntryText" style="white-space:pre-wrap; margin:0;">${entries[key]}</p>
-             <div style="margin-top:10px; display:flex; gap:10px;">
-               <button id="editCalendarEntryBtn" class="save-btn">Edit</button>
-               <button id="deleteCalendarEntryBtn" class="save-btn" style="background:#ff4d6d;">Delete</button>
-             </div>`;
+    // Display the entry only, no buttons
+    html += `
+      <div id="calendarEntryCard" style="
+        border: 1px solid #d94f87; 
+        border-radius: 12px; 
+        padding: 12px; 
+        background:#fff; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor:pointer;
+      ">
+        <p id="calendarEntryText" style="white-space:pre-wrap; margin:0;">${entries[key]}</p>
+        <small style="color:#888; display:block; margin-top:6px;">Click to edit</small>
+      </div>
+    `;
   } else {
+    // Empty entry: directly show textarea
     html += `<textarea id="newCalendarEntry" placeholder="Write something..." style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
              <button id="saveCalendarBtn" class="save-btn" style="margin-top:10px;">Save</button>`;
   }
 
-  html += `</div>`; // close card div
   calendarEntry.innerHTML = html;
+
+  // If the card exists, clicking it will show edit/delete buttons
+  const entryCard = document.getElementById("calendarEntryCard");
+  if (entryCard) {
+    entryCard.onclick = () => {
+      calendarEntry.innerHTML = `
+        <h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>
+        <textarea id="editEntryTextarea" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${entries[key]}</textarea>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+          <button id="saveEditBtn" class="save-btn">Save</button>
+          <button id="cancelEditBtn" class="save-btn" style="background:#aaa;">Cancel</button>
+          <button id="deleteCalendarEntryBtn" class="save-btn" style="background:#ff4d6d;">Delete</button>
+        </div>
+      `;
+
+      document.getElementById("saveEditBtn").onclick = async () => {
+        const newText = document.getElementById("editEntryTextarea").value;
+        if (!newText) return alert("Cannot save empty entry!");
+        await saveEntryToFirebase(key, newText);
+        alert("Entry updated!");
+        renderPastEntries();
+        renderCalendar(currentDate);
+        calendarEntry.style.display = "none";
+        renderExportList();
+      };
+
+      document.getElementById("cancelEditBtn").onclick = () => {
+        showCalendarEntry(key, day, month, year);
+      };
+
+      document.getElementById("deleteCalendarEntryBtn").onclick = async () => {
+        if (!confirm("Are you sure you want to delete this entry?")) return;
+        await deleteEntryFromFirebase(key);
+        renderPastEntries();
+        renderCalendar(currentDate);
+        calendarEntry.style.display = "none";
+        renderExportList();
+      };
+    };
+  }
 
   // Save new entry
   const saveBtnCal = document.getElementById("saveCalendarBtn");
@@ -208,48 +245,6 @@ function showCalendarEntry(key, day, month, year) {
     if (!text) return alert("Cannot save empty entry!");
     await saveEntryToFirebase(key, text);
     alert("Entry saved!");
-    renderPastEntries();
-    renderCalendar(currentDate);
-    showCalendarEntry(key, day, month, year);
-    calendarEntry.style.display = "none";
-    renderExportList();
-  };
-
-  // Edit existing entry
-  const editBtn = document.getElementById("editCalendarEntryBtn");
-  if (editBtn) editBtn.onclick = () => {
-    const currentText = entries[key];
-    calendarEntry.innerHTML = `
-      <h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>
-      <textarea id="editEntryTextarea" style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;">${currentText}</textarea>
-      <div style="margin-top:10px; display:flex; gap:10px;">
-        <button id="saveEditBtn" class="save-btn">Save</button>
-        <button id="cancelEditBtn" class="save-btn" style="background:#aaa;">Cancel</button>
-      </div>
-    `;
-
-    document.getElementById("saveEditBtn").onclick = async () => {
-      const newText = document.getElementById("editEntryTextarea").value;
-      if (!newText) return alert("Cannot save empty entry!");
-      await saveEntryToFirebase(key, newText);
-      alert("Entry updated!");
-      renderPastEntries();
-      renderCalendar(currentDate);
-      showCalendarEntry(key, day, month, year);
-      calendarEntry.style.display = "none";
-      renderExportList();
-    };
-
-    document.getElementById("cancelEditBtn").onclick = () => {
-      showCalendarEntry(key, day, month, year);
-    };
-  };
-
-  // Delete entry
-  const deleteBtn = document.getElementById("deleteCalendarEntryBtn");
-  if (deleteBtn) deleteBtn.onclick = async () => {
-    if (!confirm("Are you sure you want to delete this entry?")) return;
-    await deleteEntryFromFirebase(key);
     renderPastEntries();
     renderCalendar(currentDate);
     calendarEntry.style.display = "none";
@@ -296,6 +291,7 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
 
 
 
