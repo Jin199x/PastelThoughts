@@ -1,7 +1,7 @@
 // ====== Firebase Setup ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, deleteField, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
@@ -55,24 +55,14 @@ async function saveEntryToFirebase(dateKey, text) {
   });
 }
 
+
 async function deleteEntryFromFirebase(dateKey) {
   if (!window.currentUser) return;
   const userRef = doc(db, "users", window.currentUser.uid);
-
-  // Make sure the document exists
-  const docSnap = await getDoc(userRef);
-  if (!docSnap.exists()) {
-    // Nothing to delete
-    return;
-  }
-
-  // Delete the specific entry
   await updateDoc(userRef, {
     [`entries.${dateKey}`]: deleteField()
   });
 }
-
-
 
 // ====== Render Past Entries ======
 async function renderPastEntries() {
@@ -372,6 +362,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
