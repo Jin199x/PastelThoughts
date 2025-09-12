@@ -58,15 +58,18 @@
           <div style="display:flex;justify-content:center;margin-bottom:10px;">
             <img id="profilePic" src="default-avatar.png" alt="Profile Picture" width="120" height="120" style="border-radius:50%;object-fit:cover;border:2px solid #d94f87;">
           </div>
-        <h3>User Info</h3>
-      <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
-        <strong>Name:</strong>
-        <input type="text" id="profileNameInput" value="" readonly 
-               style="border:1px solid #d94f87; border-radius:8px; padding:4px 6px;">
-        <img id="editNameBtn" src="pen-icon.png" alt="Edit Name" width="20" height="20" style="cursor:pointer;">
-        <button id="saveNameBtn" style="padding:4px 8px; background:#d94f87;color:white;border:none;border-radius:6px;cursor:pointer; display:none;">Save</button>
-      </div>
-      <p><strong>Email:</strong> <span id="profileEmail">Placeholder</span></p>
+       <h3>User Info</h3>
+<div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+  <strong>Name:</strong>
+  <input type="text" id="profileNameInput" value="" 
+         placeholder="Enter your name" 
+         style="border:1px solid #d94f87; border-radius:8px; padding:4px 6px;">
+  <button id="saveNameBtn" 
+          style="padding:4px 8px; background:#d94f87;color:white;border:none;border-radius:6px;cursor:pointer;">
+    Save
+  </button>
+</div>
+<p><strong>Email:</strong> <span id="profileEmail">Placeholder</span></p>
           
         <div class="profile-section">
           <h3>Customization</h3>
@@ -113,6 +116,7 @@
   <script type="module" src="profile.js"></script>
 </body>
 </html>
+
 
 
 
