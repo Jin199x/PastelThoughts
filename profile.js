@@ -401,10 +401,9 @@ if (exportBtn) {
 // ===== Firebase Auth Listener =====
 onAuthStateChanged(auth, async (user) => {
   if (!user) return window.location.href = 'index.html';
-
   window.currentUser = user;
 
-  const userDocRef = doc(db, "users", currentUser.uid);
+  const userDocRef = doc(db, "users", window.currentUser.uid);
   const userSnap = await getDoc(userDocRef);
 
   if (!userSnap.exists()) {
@@ -417,8 +416,11 @@ onAuthStateChanged(auth, async (user) => {
     });
   }
 
-  await loadEntries();
-  listenForEntries();
-  await loadProfilePic();
-  await loadUserInfo();
+  // Load everything in sequence
+  await loadEntries();          // populates window.entries
+  await loadProfilePic();       // sets profilePic.src
+  await loadUserInfo();         // sets profileNameInput.value
+  await updateDailyThought();   // sets dailyThoughtEl & totalEntriesEl
+  listenForEntries();           // sets up real-time listener
+  renderExportList();           // renders entries
 });
