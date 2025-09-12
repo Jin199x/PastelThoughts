@@ -45,9 +45,6 @@ async function loadProfilePic() {
   }
 }
 
-// Call this after confirming currentUser exists (after login)
-if (currentUser) loadProfilePic();
-
 // ====== Profile Picture Upload to ImgBB ======
 const uploadPic = document.getElementById("uploadPic");
 const cropCanvas = document.getElementById("cropCanvas");
@@ -118,6 +115,7 @@ cropCanvas.addEventListener("mouseleave", endDrag);
 cropCanvas.addEventListener("touchstart", startDrag);
 cropCanvas.addEventListener("touchmove", drag);
 cropCanvas.addEventListener("touchend", endDrag);
+
 // ===== Apply crop & upload to ImgBB + save URL to Firestore =====
 applyCropBtn.addEventListener("click", async () => {
   if (!cropRect.width || !cropRect.height) return;
@@ -206,13 +204,14 @@ async function renderExportList() {
       `;
       exportList.appendChild(div);
     });
+
+    // Refresh stats with latest entries
+    refreshProfileStats(userEntries);
+
   } catch (err) {
     console.error("Failed to fetch entries for export:", err);
   }
 }
-
-// Initial render
-renderExportList();
 
 // Search/filter functionality
 searchExport.addEventListener('input', () => {
@@ -271,6 +270,7 @@ exportBtn.addEventListener('click', async () => {
   doc.save('PastelThoughtsDiary.pdf');
 });
 
+// ===== User Info =====
 const profileNameInput = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
 const saveNameBtn = document.getElementById("saveNameBtn");
@@ -279,10 +279,8 @@ const saveNameBtn = document.getElementById("saveNameBtn");
 async function loadUserInfo() {
   if (!currentUser) return;
 
-  // Set email from Firebase Auth
   profileEmail.textContent = currentUser.email;
 
-  // Fetch name from Firestore
   const userDocRef = doc(db, "users", currentUser.uid);
   const userSnap = await getDoc(userDocRef);
   if (userSnap.exists()) {
@@ -292,31 +290,25 @@ async function loadUserInfo() {
 }
 
 // Save updated name to Firestore
-saveNameBtn.addEventListener("click", async () => {
+async function saveName() {
   const newName = profileNameInput.value.trim();
   if (!newName) return alert("Name cannot be empty!");
-
   const userDocRef = doc(db, "users", currentUser.uid);
   await setDoc(userDocRef, { name: newName }, { merge: true });
   alert("Name updated successfully!");
-});
+}
 
-// Call this whenever profile section is shown
-loadUserInfo();
-
-//== Stats Section ==
+// ===== Stats Section =====
 const streakCountEl = document.getElementById("streakCount");
 const totalEntriesEl = document.getElementById("totalEntries");
 
-// Calculate streak & total entries
-function updateStats() {
-  const entryDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
+function updateStats(userEntries) {
+  const entryDates = Object.keys(userEntries).sort((a, b) => new Date(b) - new Date(a));
   const today = new Date();
   let streak = 0;
 
   if (entryDates.length > 0) {
     let prevDate = new Date(entryDates[0]);
-
     for (let i = 0; i < entryDates.length; i++) {
       const entryDate = new Date(entryDates[i]);
       const diff = Math.floor((prevDate - entryDate) / (1000 * 60 * 60 * 24));
@@ -336,17 +328,6 @@ function updateStats() {
   totalEntriesEl.textContent = entryDates.length;
 }
 
-// Call this whenever entries are loaded or updated
-function refreshProfileStats() {
-  updateStats();
+function refreshProfileStats(userEntries = {}) {
+  updateStats(userEntries);
 }
-
-// Example: after loading entries from Firebase
-loadEntries().then(() => {
-  refreshProfileStats();
-});
-
-
-
-
-
