@@ -241,17 +241,34 @@ async function loadUserInfo() {
   }
 }
 
+const profileNameInput = document.getElementById("profileNameInput");
+const saveNameBtn = document.getElementById("saveNameBtn");
+const editNameBtn = document.getElementById("editNameBtn");
+
+// 1️⃣ Pen click: enable editing
+if (editNameBtn) {
+  editNameBtn.addEventListener("click", () => {
+    profileNameInput.removeAttribute("readonly");  // allow typing
+    profileNameInput.focus();                       // focus input
+    saveNameBtn.style.display = "inline-block";    // show save button
+  });
+}
+
+// 2️⃣ Save click: save to Firestore
 if (saveNameBtn) {
   saveNameBtn.addEventListener("click", async () => {
     const newName = profileNameInput.value.trim();
     if (!newName) return alert("Name cannot be empty!");
+
     const userDocRef = doc(db, "users", window.currentUser.uid);
     await setDoc(userDocRef, { name: newName }, { merge: true });
-    profileNameInput.placeholder = newName;
-    profileNameInput.value = "";
+
+    profileNameInput.setAttribute("readonly", true); // lock input again
+    saveNameBtn.style.display = "none";              // hide save button
     alert("Name updated successfully!");
   });
 }
+
 
 // ===== Stats calculation & save =====
 function computeStreak(entriesObj) {
@@ -386,4 +403,5 @@ onAuthStateChanged(auth, async (user) => {
   await refreshProfileStats();
   renderExportList();
 });
+
 
