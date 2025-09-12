@@ -48,33 +48,21 @@ onAuthStateChanged(auth, user => {
 
 // ====== Save / Delete Entry Functions (Firestore only) ======
 async function saveEntryToFirebase(dateKey, text) {
-  if (!currentUser) return;
-  const userRef = doc(db, "users", currentUser.uid);
-
-  // Get existing entries
-  const docSnap = await getDoc(userRef);
-  const existingEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
-
-  // Update the entry
-  existingEntries[dateKey] = text;
-
-  // Save the updated entries object
-  await setDoc(userRef, { entries: existingEntries }, { merge: true });
+  if (!window.currentUser) return;
+  const userRef = doc(db, "users", window.currentUser.uid);
+  await updateDoc(userRef, {
+    [`entries.${dateKey}`]: text
+  });
 }
 
 async function deleteEntryFromFirebase(dateKey) {
-  if (!currentUser) return;
-  const userRef = doc(db, "users", currentUser.uid);
-
-  const docSnap = await getDoc(userRef);
-  const existingEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
-
-  // Delete the entry
-  delete existingEntries[dateKey];
-
-  // Save back
-  await setDoc(userRef, { entries: existingEntries }, { merge: true });
+  if (!window.currentUser) return;
+  const userRef = doc(db, "users", window.currentUser.uid);
+  await updateDoc(userRef, {
+    [`entries.${dateKey}`]: deleteField()
+  });
 }
+
 
 
 // ====== Render Past Entries ======
@@ -375,6 +363,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
