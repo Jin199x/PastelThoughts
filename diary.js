@@ -155,6 +155,9 @@ function renderCalendar(date) {
   calendarGrid.innerHTML = "";
   calendarMonth.textContent = date.toLocaleString("default", { month: "long" }) + " " + year;
 
+  const today = new Date();
+  today.setHours(0,0,0,0); // normalize
+
   for (let i = 0; i < firstDay; i++) {
     const emptyCell = document.createElement("div");
     emptyCell.classList.add("calendar-cell", "empty");
@@ -166,11 +169,26 @@ function renderCalendar(date) {
     cell.classList.add("calendar-cell");
     cell.textContent = day;
     const key = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    cell.dataset.date = key; // add data-date attribute
+
     if (entries[key]) cell.classList.add("has-entry");
-    cell.onclick = () => showCalendarEntry(key, day, month, year);
+
+    const cellDate = new Date(year, month, day);
+    cellDate.setHours(0,0,0,0);
+
+    if (cellDate > today) {
+      // Future date: disable click
+      cell.classList.add("disabled");
+      cell.style.cursor = "not-allowed";
+    } else {
+      // Only allow past/today dates to open entry
+      cell.onclick = () => showCalendarEntry(key, day, month, year);
+    }
+
     calendarGrid.appendChild(cell);
   }
 }
+
 
 function showCalendarEntry(key, day, month, year) {
   calendarEntry.style.display = "block";
@@ -344,6 +362,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
