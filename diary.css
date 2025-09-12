@@ -306,6 +306,13 @@ body {
   cursor: default;
 }
 
+.calendar-cell.disabled {
+  background: rgba(200,200,200,0.3);
+  color: #999;
+  pointer-events: none; /* block clicks */
+}
+
+
 /* ====== Profile Section ====== */
 .profile {
   display: none;
@@ -514,6 +521,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
 .sidebar {
   transition: transform 0.3s ease;
 }
+
 
 
 
