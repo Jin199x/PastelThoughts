@@ -47,7 +47,6 @@ onAuthStateChanged(auth, user => {
 });
 
 // ====== Save / Delete Entry Functions (Firestore only) ======
-// ====== Save / Delete Entry Functions (Firestore only) ======
 async function saveEntryToFirebase(dateKey, text) {
   if (!currentUser) return;
   const userRef = doc(db, "users", currentUser.uid);
@@ -362,5 +361,6 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
