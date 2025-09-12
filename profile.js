@@ -29,8 +29,8 @@ const applyCropBtn = document.getElementById("applyCropBtn");
 const profileEmail = document.getElementById("profileEmail");
 const profileNameInput = document.getElementById("profileNameInput");
 const saveNameBtn = document.getElementById("saveNameBtn");
-const streakCountEl = document.getElementById("streakCountEl");
 const totalEntriesEl = document.getElementById("totalEntriesEl");
+const dailyThoughtEl = document.getElementById("dailyThoughtEl");
 const searchExport = document.getElementById("searchExport");
 const toggleSelectBtn = document.getElementById("toggleSelectBtn");
 const exportBtn = document.getElementById("exportBtn");
@@ -86,13 +86,9 @@ async function loadEntries() {
         snap.forEach(docSnap => {
           const d = docSnap.data();
           let key;
-          if (d.date && typeof d.date.toDate === "function") {
-            key = d.date.toDate().toISOString();
-          } else if (d.date) {
-            key = new Date(d.date).toISOString();
-          } else {
-            key = docSnap.id;
-          }
+          if (d.date && typeof d.date.toDate === "function") key = d.date.toDate().toISOString();
+          else if (d.date) key = new Date(d.date).toISOString();
+          else key = docSnap.id;
           entriesObj[key] = d.content || d.text || d.entry || d.body || "";
         });
       } catch (e) {
@@ -103,7 +99,7 @@ async function loadEntries() {
 
   window.entries = entriesObj;
   renderExportList();
-  await updateStatsAndSave();
+  await updateDailyThought(); // <-- update total entries & daily thought
 }
 window.loadEntries = loadEntries;
 
@@ -135,7 +131,7 @@ async function loadProfilePic() {
   }
 }
 
-// ===== Upload & Crop Image =====
+// ===== Upload & Crop Image ======
 if (uploadPic) {
   uploadPic.addEventListener("change", (e) => {
     const file = e.target.files[0];
@@ -266,8 +262,7 @@ saveNameBtn.addEventListener("click", async () => {
   alert("Name updated successfully!");
 });
 
-// === dailies task ===
-
+// ===== Daily Thoughts =====
 const dailyThoughts = [
   "Share one thing you're grateful for today.",
   "Write about a small victory you had today.",
@@ -301,19 +296,18 @@ const dailyThoughts = [
 ];
 
 async function updateDailyThought() {
-  if (!currentUser) return;
+  if (!window.currentUser) return;
 
   const userRef = doc(db, "users", currentUser.uid);
   const userSnap = await getDoc(userRef);
-  let todayKey = toDateKey(new Date());
+  const todayKey = toDateKey(new Date());
   let dailyThought = "";
 
   if (userSnap.exists()) {
     const data = userSnap.data();
-    if (data.dailyThought && data.dailyThought.date === todayKey) {
+    if (data.dailyThought?.date === todayKey) {
       dailyThought = data.dailyThought.text;
     } else {
-      // Pick new random thought
       const index = Math.floor(Math.random() * dailyThoughts.length);
       dailyThought = dailyThoughts[index];
       await setDoc(userRef, { dailyThought: { date: todayKey, text: dailyThought } }, { merge: true });
@@ -324,26 +318,14 @@ async function updateDailyThought() {
     await setDoc(userRef, { dailyThought: { date: todayKey, text: dailyThought } }, { merge: true });
   }
 
-  const dailyEl = document.getElementById("dailyThoughtEl");
-  if (dailyEl) dailyEl.textContent = dailyThought;
+  if (dailyThoughtEl) dailyThoughtEl.textContent = dailyThought;
 
-  // Update total entries
+  // update total entries
   const total = Object.keys(window.entries || {}).length;
   if (totalEntriesEl) totalEntriesEl.textContent = total;
 }
 
-// Call this after entries are loaded
-updateDailyThought();
-
-
-
-// ===== Refresh function =====
-function refreshStats() {
-  updateStatsInFirebase();
-}
-
-
-// ===== Export Entries UI & PDF export =====
+// ===== Export Entries =====
 function renderExportList() {
   if (!exportList) return;
   exportList.innerHTML = '';
@@ -361,9 +343,10 @@ function renderExportList() {
     `;
     exportList.appendChild(div);
   });
-  refreshProfileStats();
+  updateDailyThought(); // refresh total entries & daily thought
 }
 
+// ===== Search & Toggle =====
 if (searchExport) {
   searchExport.addEventListener('input', () => {
     const query = searchExport.value.toLowerCase();
@@ -381,6 +364,7 @@ if (toggleSelectBtn) {
   });
 }
 
+// ===== Export PDF =====
 if (exportBtn) {
   exportBtn.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
@@ -428,8 +412,8 @@ onAuthStateChanged(auth, async (user) => {
       name: "",
       profilePic: "",
       entries: {},
-      streak: 0,
-      totalEntries: 0
+      totalEntries: 0,
+      dailyThought: {}
     });
   }
 
@@ -437,21 +421,4 @@ onAuthStateChanged(auth, async (user) => {
   listenForEntries();
   await loadProfilePic();
   await loadUserInfo();
-  await refreshProfileStats();
-  renderExportList();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
