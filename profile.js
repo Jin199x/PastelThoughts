@@ -44,7 +44,7 @@ img.onload = () => {
   ctx.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
 };
 
-// Dragging logic (unchanged)
+// ===== Dragging logic =====
 function getPos(e) {
   const rect = cropCanvas.getBoundingClientRect();
   let x, y;
@@ -81,7 +81,7 @@ cropCanvas.addEventListener("touchstart", startDrag);
 cropCanvas.addEventListener("touchmove", drag);
 cropCanvas.addEventListener("touchend", endDrag);
 
-// Apply crop & upload to ImgBB
+// ===== Apply crop & upload to ImgBB + save URL to Firestore =====
 applyCropBtn.addEventListener("click", async () => {
   if (!cropRect.width || !cropRect.height) return;
 
@@ -111,13 +111,15 @@ applyCropBtn.addEventListener("click", async () => {
     const data = await response.json();
     if (data.success) {
       const imageUrl = data.data.url;
-      profilePic.src = imageUrl; // Update the profile pic
 
-      // OPTIONAL: save the URL to Firestore for the current user
+      // Update the profile pic on page
+      profilePic.src = imageUrl;
+
+      // Save the URL to Firestore for the current user
       const userDocRef = doc(db, "users", currentUser.uid);
       await setDoc(userDocRef, { profilePic: imageUrl }, { merge: true });
 
-      alert("Profile picture updated!");
+      alert("Profile picture updated successfully!");
     } else {
       console.error(data);
       alert("Failed to upload image.");
@@ -133,14 +135,13 @@ applyCropBtn.addEventListener("click", async () => {
   uploadPic.value = "";
 });
 
-
 // ===== Export Entries Section =====
 const exportList = document.getElementById('exportList');
 const searchExport = document.getElementById('searchExport');
 const toggleSelectBtn = document.getElementById('toggleSelectBtn');
 const exportBtn = document.getElementById('exportBtn');
 
-let allSelected = false; // toggle state
+let allSelected = false;
 
 function renderExportList() {
   exportList.innerHTML = '';
@@ -156,11 +157,8 @@ function renderExportList() {
     exportList.appendChild(div);
   });
 }
-
-// Initial render
 renderExportList();
 
-// Search/filter functionality
 searchExport.addEventListener('input', () => {
   const query = searchExport.value.toLowerCase();
   document.querySelectorAll('#exportList div').forEach(div => {
@@ -168,14 +166,12 @@ searchExport.addEventListener('input', () => {
   });
 });
 
-// Toggle Select All / Deselect All
 toggleSelectBtn.addEventListener('click', () => {
   allSelected = !allSelected;
   document.querySelectorAll('.exportCheck').forEach(cb => cb.checked = allSelected);
   toggleSelectBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
 });
 
-// Export to PDF
 exportBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -191,7 +187,7 @@ exportBtn.addEventListener('click', () => {
     const key = checkbox.dataset.key;
     if (entries[key]) {
       doc.setFontSize(14);
-      doc.setTextColor(200, 50, 135); // pink for date
+      doc.setTextColor(200, 50, 135);
       doc.text(key, 20, yOffset);
       yOffset += 8;
 
@@ -210,6 +206,3 @@ exportBtn.addEventListener('click', () => {
 
   doc.save('PastelThoughtsDiary.pdf');
 });
-
-
-
