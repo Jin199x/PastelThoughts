@@ -1,7 +1,7 @@
 // ====== Firebase Setup ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, deleteField, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
@@ -50,19 +50,21 @@ onAuthStateChanged(auth, user => {
 async function saveEntryToFirebase(dateKey, text) {
   if (!window.currentUser) return;
   const userRef = doc(db, "users", window.currentUser.uid);
-  await updateDoc(userRef, {
-    [`entries.${dateKey}`]: text
-  });
-}
 
+  await setDoc(userRef, {
+    [`entries.${dateKey}`]: text
+  }, { merge: true }); // merge ensures existing entries are preserved
+}
 
 async function deleteEntryFromFirebase(dateKey) {
   if (!window.currentUser) return;
   const userRef = doc(db, "users", window.currentUser.uid);
-  await updateDoc(userRef, {
+
+  await setDoc(userRef, {
     [`entries.${dateKey}`]: deleteField()
-  });
+  }, { merge: true }); // merge ensures the field is deleted without affecting others
 }
+
 
 // ====== Render Past Entries ======
 async function renderPastEntries() {
@@ -362,6 +364,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
