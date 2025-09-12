@@ -1,7 +1,7 @@
 // ====== Firebase Setup ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
@@ -46,33 +46,22 @@ onAuthStateChanged(auth, user => {
   renderExportList();
 });
 
-// ====== Save / Delete Entry Functions (Firestore only) ======
+// ====== Save / Edit Entry ======
 async function saveEntryToFirebase(dateKey, text) {
   if (!currentUser) return;
-
-  // Load current entries from Firestore
-  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
-  const currentEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
-
-  // Update the entry
-  currentEntries[dateKey] = text;
-
-  // Push back to Firestore
-  await setDoc(doc(db, "users", currentUser.uid), { entries: currentEntries }, { merge: true });
+  const userRef = doc(db, "users", currentUser.uid);
+  await updateDoc(userRef, {
+    [`entries.${dateKey}`]: text
+  });
 }
 
+// ====== Delete Entry ======
 async function deleteEntryFromFirebase(dateKey) {
   if (!currentUser) return;
-
-  // Load current entries from Firestore
-  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
-  const currentEntries = docSnap.exists() ? docSnap.data().entries || {} : {};
-
-  // Remove the entry
-  delete currentEntries[dateKey];
-
-  // Push back to Firestore
-  await setDoc(doc(db, "users", currentUser.uid), { entries: currentEntries }, { merge: true });
+  const userRef = doc(db, "users", currentUser.uid);
+  await updateDoc(userRef, {
+    [`entries.${dateKey}`]: deleteField()
+  });
 }
 
 // ====== Render Past Entries ======
@@ -373,6 +362,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
 
 
 
