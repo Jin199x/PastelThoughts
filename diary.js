@@ -1,7 +1,7 @@
 // ====== Firebase Setup ======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC9M9No4HNitBiiqvXxGMYQSQJ0TNhKxR0",
@@ -35,39 +35,36 @@ const prevMonthBtn = document.getElementById("prevMonth");
 const nextMonthBtn = document.getElementById("nextMonth");
 
 let currentDate = new Date();
-let entries = {};
 let currentUser = null;
 
 // ====== Firebase Auth Listener ======
 onAuthStateChanged(auth, user => {
   if (!user) return window.location.href = 'index.html';
   currentUser = user;
-  loadEntries();
-});
-
-// ====== Load Entries ======
-async function loadEntries() {
-  const docRef = doc(db, "users", currentUser.uid);
-  const docSnap = await getDoc(docRef);
-  entries = docSnap.exists() ? docSnap.data().entries || {} : {};
   renderPastEntries();
   renderCalendar(currentDate);
   renderExportList();
-}
+});
 
-// ====== Save / Delete Entry Functions ======
+// ====== Save / Delete Entry Functions (Firestore only) ======
 async function saveEntryToFirebase(dateKey, text) {
-  entries[dateKey] = text;
-  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+  if (!currentUser) return;
+  const userRef = doc(db, "users", currentUser.uid);
+  await setDoc(userRef, { [`entries.${dateKey}`]: text }, { merge: true });
 }
 
 async function deleteEntryFromFirebase(dateKey) {
-  delete entries[dateKey];
-  await setDoc(doc(db, "users", currentUser.uid), { entries }, { merge: true });
+  if (!currentUser) return;
+  const userRef = doc(db, "users", currentUser.uid);
+  await setDoc(userRef, { [`entries.${dateKey}`]: deleteField() }, { merge: true });
 }
 
 // ====== Render Past Entries ======
-function renderPastEntries() {
+async function renderPastEntries() {
+  if (!currentUser) return;
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const entries = docSnap.exists() ? docSnap.data().entries || {} : {};
+
   timeline.innerHTML = '<h3>Past Entries</h3>';
   const sortedDates = Object.keys(entries).sort((a, b) => new Date(b) - new Date(a));
 
@@ -77,7 +74,6 @@ function renderPastEntries() {
     card.classList.add('entry-card');
     const displayDate = new Date(dateKey).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
     card.innerHTML = `<strong>${displayDate}</strong><p>${entryValue}</p>`;
-
     card.onclick = () => showFullEntry(dateKey, entryValue, displayDate);
     timeline.appendChild(card);
   });
@@ -116,6 +112,7 @@ function showFullEntry(dateKey, entryValue, displayDate) {
   deleteBtn.onclick = async () => {
     if (!confirm("Are you sure you want to delete this entry?")) return;
     await deleteEntryFromFirebase(dateKey);
+    alert("Entry deleted!");
     renderPastEntries();
     renderCalendar(currentDate);
     renderExportList();
@@ -137,8 +134,6 @@ saveBtn.onclick = async () => {
   renderPastEntries();
   renderCalendar(currentDate);
   renderExportList();
-  
-  
 };
 
 // ====== Calendar ======
@@ -147,7 +142,11 @@ calendarEntry.id = "calendarEntry";
 calendarEntry.style.marginTop = "20px";
 calendarSection.appendChild(calendarEntry);
 
-function renderCalendar(date) {
+async function renderCalendar(date) {
+  if (!currentUser) return;
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const entries = docSnap.exists() ? docSnap.data().entries || {} : {};
+
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -184,13 +183,16 @@ function renderCalendar(date) {
   }
 }
 
+// ====== Show Calendar Entry ======
+async function showCalendarEntry(key, day, month, year) {
+  if (!currentUser) return;
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const entries = docSnap.exists() ? docSnap.data().entries || {} : {};
 
-function showCalendarEntry(key, day, month, year) {
   calendarEntry.style.display = "block";
   let html = `<h2>${day} ${new Date(year, month).toLocaleString("default",{month:"long"})} ${year}</h2>`;
 
   if (entries[key]) {
-    // Display the entry only, no buttons
     html += `
       <div id="calendarEntryCard" style="
         border: 1px solid #d94f87; 
@@ -205,7 +207,6 @@ function showCalendarEntry(key, day, month, year) {
       </div>
     `;
   } else {
-    // Empty entry: directly show textarea
     html += `<textarea id="newCalendarEntry" placeholder="Write something..." style="width:100%;height:150px;padding:10px;border-radius:12px;border:1px solid #d94f87;"></textarea>
              <button id="saveCalendarBtn" class="save-btn" style="margin-top:10px;">Save</button>`;
   }
@@ -244,6 +245,7 @@ function showCalendarEntry(key, day, month, year) {
       document.getElementById("deleteCalendarEntryBtn").onclick = async () => {
         if (!confirm("Are you sure you want to delete this entry?")) return;
         await deleteEntryFromFirebase(key);
+        alert("Entry deleted!");
         renderPastEntries();
         renderCalendar(currentDate);
         calendarEntry.style.display = "none";
@@ -265,7 +267,6 @@ function showCalendarEntry(key, day, month, year) {
     renderExportList();
   };
 }
-
 
 // ====== Month Navigation ======
 prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(currentDate); };
@@ -356,18 +357,3 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
