@@ -1,7 +1,18 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc 
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -17,6 +28,40 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// ===== THEME SYNC =====
+const body = document.body;
+
+function applyTheme(theme) {
+  body.classList.remove("theme-pink", "theme-blue", "theme-dark", "theme-lavender");
+  if (theme) body.classList.add(theme);
+}
+
+async function loadTheme(user) {
+  if (!user) return;
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    const data = snap.data();
+    if (data.theme) {
+      applyTheme(data.theme);
+      localStorage.setItem("lastTheme", data.theme); // quick load next time
+    }
+  }
+}
+
+// Fallback: apply last saved theme instantly
+const lastTheme = localStorage.getItem("lastTheme");
+if (lastTheme) applyTheme(lastTheme);
+
+// Apply theme when logged in
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    await loadTheme(user);
+  }
+});
+
+// ===== LOGIN / SIGNUP / RESET =====
+
 // Grab forms and links
 const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
@@ -24,18 +69,18 @@ const forgotForm = document.getElementById('forgotForm');
 const showSignup = document.getElementById('showSignup');
 const showForgot = document.getElementById('showForgot');
 
-// --- Toggle forms (preserve original layout)
+// --- Toggle forms
 function showForm(formType) {
   loginForm.style.display = formType === 'login' ? 'flex' : 'none';
   signupForm.style.display = formType === 'signup' ? 'flex' : 'none';
   forgotForm.style.display = formType === 'forgot' ? 'flex' : 'none';
 }
 
-// --- Link events ---
+// --- Link events
 showSignup.addEventListener('click', e => { e.preventDefault(); showForm('signup'); });
 showForgot.addEventListener('click', e => { e.preventDefault(); showForm('forgot'); });
 
-// --- Back links inside HTML forms ---
+// --- Back links
 const backSignup = document.createElement('a');
 backSignup.href = "#";
 backSignup.textContent = "Back to Login";
@@ -59,7 +104,7 @@ document.addEventListener('click', e => {
   }
 });
 
-// --- Firebase Login ---
+// --- Login ---
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('email').value;
@@ -74,7 +119,7 @@ loginForm.addEventListener('submit', e => {
     .catch(error => alert(error.message));
 });
 
-// --- Firebase Signup ---
+// --- Signup ---
 signupForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('signupEmail').value;
@@ -89,7 +134,7 @@ signupForm.addEventListener('submit', e => {
     .catch(error => alert(error.message));
 });
 
-// --- Firebase Forgot Password ---
+// --- Forgot Password ---
 forgotForm.addEventListener('submit', e => {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value;
@@ -99,5 +144,3 @@ forgotForm.addEventListener('submit', e => {
     .then(() => alert('Password reset email sent!'))
     .catch(error => alert(error.message));
 });
-
-
