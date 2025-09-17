@@ -378,17 +378,7 @@ function hideLoading() {
   appContent.style.display = "block";
 }
 
-// Start with loading
-showLoading();
 
-// Example: wait until Firebase auth + user data is ready
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    // load entries, theme, stats, etc.
-    await loadUserData(user); // <-- your function that calls Firestore
-  }
-  hideLoading(); // only hide once everything is ready
-});
 
 
 
