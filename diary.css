@@ -10,6 +10,21 @@ body {
   background: #ffe6f0;
   color: #333;
 }
+//== loading
+.loading-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #fdf6f9; /* pastel background */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Merriweather', serif;
+  color: #d94f87;
+  z-index: 9999;
+}
+
 
 /* ====== Container ====== */
 .container {
@@ -521,6 +536,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
 .sidebar {
   transition: transform 0.3s ease;
 }
+
 
 
 
