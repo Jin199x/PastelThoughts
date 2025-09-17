@@ -365,6 +365,31 @@ onAuthStateChanged(auth, async (user) => {
 
 
 
+const loadingScreen = document.getElementById("loadingScreen");
+const appContent = document.getElementById("appContent");
+
+function showLoading() {
+  loadingScreen.style.display = "flex";
+  appContent.style.display = "none";
+}
+
+function hideLoading() {
+  loadingScreen.style.display = "none";
+  appContent.style.display = "block";
+}
+
+// Start with loading
+showLoading();
+
+// Example: wait until Firebase auth + user data is ready
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // load entries, theme, stats, etc.
+    await loadUserData(user); // <-- your function that calls Firestore
+  }
+  hideLoading(); // only hide once everything is ready
+});
+
 
 
 
