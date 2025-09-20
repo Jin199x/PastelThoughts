@@ -249,6 +249,11 @@ html, body {
   }
 }
 
+/* Default: hide mobile logout button */
+#logoutBtnMobile {
+  display: none;
+}
+
 /* ====== Calendar Section ====== */
 .calendar {
   display: none;
@@ -430,6 +435,13 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     display: flex;
     gap: 10px;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  
+  .sidebar nav button {
+    flex: 1 1 calc(33.333% - 8px); /* 3 buttons per row with gaps */
+    max-width: none;
+    box-sizing: border-box;
   }
 
   .main-content {
@@ -453,10 +465,11 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     width: 100%;
     gap: 8px;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .sidebar nav button {
-    flex: 1 1 45%;
+    flex: 1 1 calc(33.333% - 8px);
     font-size: 14px;
     padding: 8px;
   }
@@ -592,19 +605,22 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 
   /* Logout button */
-  .profile-section #logoutBtnMobile {
-    display: block;
-    width: auto;            /* prevent stretching */
-    padding: 10px 16px;
-    font-size: 14px;
-    margin-top: 30px;       /* big space above */
-  }
-
+ .profile-section #logoutBtnMobile {
+  display: block;        /* already there */
+  flex: none;            /* prevent flex grow/shrink */
+  width: auto;           /* natural width */
+  align-self: flex-start;/* prevent stretching across row */
+  padding: 10px 16px;
+  font-size: 14px;
+  margin-top: 30px;
+}
+  
   /* Hide the desktop logout button */
   #logoutBtn {
     display: none;
   }
 }
+
 
 
 
