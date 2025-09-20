@@ -14,10 +14,10 @@ body {
 /* ====== iOS Safari Scroll / Bounce Fix ====== */
 html, body {
   height: 100%;
-  width: 100%;          /* ADD THIS */
+  width: 100%;          
   overscroll-behavior-y: contain;
   overflow-y: scroll;
-  overflow-x: hidden;    /* ADD THIS */
+  overflow-x: hidden !important; 
   -webkit-overflow-scrolling: touch;
 }
 
@@ -26,9 +26,9 @@ html, body {
 .container { 
   display: flex;
   height: 100vh;
-  max-width: 100vw;      /* ADD THIS */
+  max-width: 100vw;   
   overflow-y: auto;
-  overflow-x: hidden; 
+  overflow-x: hidden !important; 
   transition: all 0.3s ease;
   -webkit-overflow-scrolling: touch;
 }
@@ -605,6 +605,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   font-style: italic;
   font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
 }
+
 
 
 
