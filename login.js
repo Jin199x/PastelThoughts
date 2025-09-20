@@ -105,12 +105,27 @@ forgotForm.addEventListener('submit', e => {
     .then(() => alert('Password reset email sent!'))
     .catch(error => alert(error.message));
 });
+
 //install button
 let deferredPrompt;
 const installBtn = document.getElementById("installPWA");
 
+// --- Hide button if app is already installed ---
+function isInstalled() {
+  // Chrome / Android
+  if (window.matchMedia('(display-mode: standalone)').matches) return true;
+  // iOS
+  if (window.navigator.standalone) return true;
+  return false;
+}
+
+if (isInstalled()) {
+  installBtn.style.display = "none";
+}
+
 // Only show button when PWA can be installed
 window.addEventListener("beforeinstallprompt", (e) => {
+  if (isInstalled()) return; // prevent showing prompt if already installed
   e.preventDefault();          // Stop automatic prompt
   deferredPrompt = e;          // Save the event
   installBtn.style.display = "block"; // Show the button
@@ -122,12 +137,13 @@ installBtn.addEventListener("click", async () => {
   deferredPrompt.prompt();
   const choice = await deferredPrompt.userChoice;
   if (choice.outcome === "accepted") {
-    installBtn.style.display = "none"; // only hide if installed
+    installBtn.style.display = "none"; // hide if installed
   } else {
     installBtn.style.display = "block"; // keep showing if dismissed
   }
   deferredPrompt = null;
 });
+
 
 
 
