@@ -106,24 +106,6 @@ forgotForm.addEventListener('submit', e => {
     .catch(error => alert(error.message));
 });
 
-// Improved toast function with fade
-function showToast(message, duration = 3000) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.style.display = 'block';
-    toast.style.opacity = '1';
-    toast.style.transition = 'opacity 0.3s ease';
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 300); // matches the transition duration
-    }, duration);
-}
-
-
-
 //install button
 let deferredPrompt;
 const installBtn = document.getElementById("installPWA");
@@ -153,7 +135,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
 // When user clicks the button
 installBtn.addEventListener("click", async () => {
   if (isInstalled()) {
-    showToast("You already have the PastelThoughts app installed on your device!");
+    alert("You already have the PastelThoughts app installed on your device!");
     return;
   }
 
@@ -163,12 +145,14 @@ installBtn.addEventListener("click", async () => {
 
   if (choice.outcome === "accepted") {
     installBtn.style.display = "none"; 
-    showToast("App installed successfully!");
+    alert("App installed successfully!");
   } else {
     installBtn.style.display = "block"; 
   }
   deferredPrompt = null;
 });
+
+
 
 
 
