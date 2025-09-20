@@ -9,28 +9,14 @@
 body {
   background: #ffe6f0;
   color: #333;
-  overscroll-behavior-x: none;
 }
-
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* stops horizontal scroll */
-  width: 100%;        /* prevent wider-than-screen layouts */
-  max-width: 100vw;   /* clamp content to screen width */
-}
-
 
 /* ====== Container ====== */
-.container {
+container {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh; /* instead of height: 100vh */
+  overflow: visible;  /* allow scrolling */
   transition: all 0.3s ease;
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
 }
 
 /* ====== Sidebar ====== */
@@ -86,7 +72,8 @@ html, body {
   flex-direction: column;
   padding: 30px;
   gap: 30px;
-  overflow-y: auto;
+  overflow-y: auto; /* keep scrolling */
+  min-height: 0; /* allow flex child to shrink */
 }
 
 /* ====== Editor ====== */
@@ -535,6 +522,16 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
 .sidebar {
   transition: transform 0.3s ease;
 }
+/* ====== iOS Safari Horizontal Scroll Fix ONLY ===== */
+@supports (-webkit-overflow-scrolling: touch) {
+  html, body {
+    overflow-x: hidden; /* stop horizontal scroll on iOS */
+  }
+  .container {
+    min-width: 100vw; /* keep container full width without clipping */
+  }
+}
+
 
 
 
