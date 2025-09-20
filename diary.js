@@ -327,11 +327,19 @@ profileBtn.onclick = () => {
   profileSection.style.display = 'flex';
 };
 
-// ====== Logout ======
-logoutBtn.onclick = async () => {
+/ ====== Logout ======
+const logoutFn = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
+
+// Desktop logout
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn.onclick = logoutFn;
+
+// Mobile logout
+const logoutBtnMobile = document.getElementById('logoutBtnMobile');
+logoutBtnMobile.onclick = logoutFn;
 
 //=== DATE config ===
 const dateEl = document.getElementById("currentDate");
@@ -422,6 +430,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
