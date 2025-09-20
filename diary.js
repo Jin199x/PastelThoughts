@@ -410,24 +410,6 @@ onAuthStateChanged(auth, async (user) => {
   renderExportList();
 });
 
-const logoutBtn = document.getElementById('logoutBtn');
-const profileSection = document.getElementById('profile');
-
-function moveLogout() {
-  if (window.innerWidth <= 992) {
-    profileSection.appendChild(logoutBtn); // move button into profile
-  } else {
-    document.querySelector('.sidebar nav').appendChild(logoutBtn); // move back to sidebar
-  }
-}
-
-// Initial check
-moveLogout();
-
-// Update on resize
-window.addEventListener('resize', moveLogout);
-
-
 const loadingScreen = document.getElementById("loadingScreen");
 const appContent = document.getElementById("appContent");
 
@@ -440,6 +422,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
