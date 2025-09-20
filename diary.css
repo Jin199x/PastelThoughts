@@ -563,68 +563,50 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
 }
 
-.profile-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* space between buttons */
-  width: 100%;
-}
+/* ===== Mobile adjustments for Export + Logout buttons ===== */
+@media (max-width: 600px) {
+  /* Keep profile section layout intact */
+  .profile-section {
+    padding: 15px; /* optional smaller padding for mobile */
+  }
 
+  /* Export controls (Select All + Search) */
+  .profile-section #toggleSelectBtn {
+    padding: 5px 10px;      /* smaller than Export button */
+    font-size: 12px;        /* smaller text */
+    width: auto;            /* do not stretch full width */
+    float: right;           /* stay on the right side */
+    margin-top: -30px;      /* adjust vertical alignment if needed */
+  }
 
-/* ====== Mobile-specific profile button fixes ====== */
-@media (max-width: 992px) {
+  .profile-section #searchExport {
+    width: calc(100% - 90px); /* leave space for Select All button */
+    margin-bottom: 10px;
+  }
 
-  /* Hide desktop logout button */
+  /* Export button */
+  .profile-section #exportBtn {
+    width: auto;            /* prevent full width */
+    padding: 10px 16px;     /* keep it bigger than Select All */
+    margin-top: 5px;
+  }
+
+  /* Logout button */
+  .profile-section #logoutBtnMobile {
+    display: block;
+    width: auto;            /* prevent stretching */
+    padding: 10px 16px;
+    font-size: 14px;
+    margin-top: 30px;       /* big space above */
+  }
+
+  /* Hide the desktop logout button */
   #logoutBtn {
     display: none;
   }
-
-  /* Show mobile logout button, compact version */
-  #logoutBtnMobile {
-    display: inline-block;
-    width: auto;           /* fit content */
-    padding: 8px 16px;     /* smaller padding */
-    font-size: 14px;
-    border-radius: 12px;
-    margin-top: 10px;
-    align-self: flex-start; /* align with other buttons */
-    box-shadow: 0 3px 6px rgba(255,182,193,0.4);
-  }
-
-  #logoutBtnMobile:hover {
-    transform: translateY(-1px);
-  }
-
-  /* Profile buttons container */
-  .profile-buttons {
-    flex-direction: row;   /* horizontal layout */
-    flex-wrap: wrap;       /* wrap if small screen */
-    gap: 8px;              /* space between buttons */
-    justify-content: flex-start;
-  }
-
-  .profile-buttons button {
-    width: auto;           /* compact buttons */
-    flex: none;            /* prevent stretching */
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 12px;
-  }
-
-  /* Optional: make export/select all buttons same size */
-  .profile-buttons button.export-btn,
-  .profile-buttons button.select-all-btn {
-    min-width: 80px;       /* ensure uniformity */
-  }
-
-  /* Sidebar nav buttons for mobile */
-  .sidebar nav button {
-    flex: 1 1 auto;        /* fit nicely in row */
-    min-width: 100px;
-    font-size: 14px;
-    padding: 8px;
-  }
 }
+
+
 
 
 
