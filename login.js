@@ -106,43 +106,65 @@ forgotForm.addEventListener('submit', e => {
     .catch(error => alert(error.message));
 });
 
+// toast function
+function showToast(message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, duration);
+}
+
+
 //install button
 let deferredPrompt;
 const installBtn = document.getElementById("installPWA");
 
-// --- Hide button if app is already installed ---
+// --- Check if app is already installed ---
 function isInstalled() {
-  // Chrome / Android
+  // Chrome/Android
   if (window.matchMedia('(display-mode: standalone)').matches) return true;
   // iOS
   if (window.navigator.standalone) return true;
   return false;
 }
 
+// Hide the button if already installed
 if (isInstalled()) {
   installBtn.style.display = "none";
 }
 
 // Only show button when PWA can be installed
 window.addEventListener("beforeinstallprompt", (e) => {
-  if (isInstalled()) return; // prevent showing prompt if already installed
-  e.preventDefault();          // Stop automatic prompt
-  deferredPrompt = e;          // Save the event
-  installBtn.style.display = "block"; // Show the button
+  if (isInstalled()) return; // app already installed
+  e.preventDefault();          
+  deferredPrompt = e;          
+  installBtn.style.display = "block"; 
 });
 
 // When user clicks the button
 installBtn.addEventListener("click", async () => {
+  if (isInstalled()) {
+    showToast("You already have the PastelThoughts app installed on your device!");
+    return;
+  }
+
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const choice = await deferredPrompt.userChoice;
+
   if (choice.outcome === "accepted") {
-    installBtn.style.display = "none"; // hide if installed
+    installBtn.style.display = "none"; 
+    showToast("App installed successfully!");
   } else {
-    installBtn.style.display = "block"; // keep showing if dismissed
+    installBtn.style.display = "block"; 
   }
   deferredPrompt = null;
 });
+
+
+
 
 
 
