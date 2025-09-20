@@ -169,45 +169,8 @@
         .then(() => console.log("SW registered for diary page!"))
         .catch(err => console.log("SW registration failed:", err));
     }
-
-    // Chrome/Android Install Prompt
-    let deferredPrompt;
-    const installBtn = document.getElementById("installBtn");
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = "block";
-    });
-
-    installBtn.addEventListener("click", async () => {
-      installBtn.style.display = "none";
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      console.log("User choice:", choice.outcome);
-      deferredPrompt = null;
-    });
-
-    // iOS Support
-    function isIos() {
-      return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-    }
-    function isInStandaloneMode() {
-      return ('standalone' in window.navigator) && window.navigator.standalone;
-    }
-
-    const iosMsg = document.getElementById("iosInstallMsg");
-    const closeIosBtn = document.getElementById("closeIosMsg");
-
-    if (isIos() && !isInStandaloneMode()) {
-      iosMsg.style.display = "block";
-    }
-
-    closeIosBtn.addEventListener("click", () => {
-      iosMsg.style.display = "none";
-    });
   </script>
 </body>
 </html>
+
 
