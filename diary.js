@@ -327,19 +327,22 @@ profileBtn.onclick = () => {
   profileSection.style.display = 'flex';
 };
 
-/ ====== Logout ======
-const logoutFn = async () => {
+// ====== Logout ======
+// Desktop logout (your original code)
+logoutBtn.onclick = async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 };
 
-// Desktop logout
-const logoutBtn = document.getElementById('logoutBtn');
-logoutBtn.onclick = logoutFn;
-
-// Mobile logout
+// Mobile logout (add this)
 const logoutBtnMobile = document.getElementById('logoutBtnMobile');
-logoutBtnMobile.onclick = logoutFn;
+if (logoutBtnMobile) {
+  logoutBtnMobile.onclick = async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  };
+}
+
 
 //=== DATE config ===
 const dateEl = document.getElementById("currentDate");
@@ -430,6 +433,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
