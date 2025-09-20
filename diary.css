@@ -443,7 +443,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 
     #logoutBtnMobile {
-    display: inline-block;  /* visible on mobile */
+    display: block !important;  /* visible on mobile */
     flex: none;
     width: auto;
     align-self: flex-start;
@@ -453,7 +453,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 
   #logoutBtn {
-    display: none; /* hide desktop logout on mobile */
+    display: none !important; /* hide desktop logout on mobile */
   }
 }
 
@@ -570,7 +570,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 
   .profile-section #logoutBtnMobile {
-    display: inline-block;
+    display: block !important;;
     flex: none;
     width: auto;
     align-self: flex-start;
@@ -580,7 +580,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 
   #logoutBtn {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -605,6 +605,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   font-style: italic;
   font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
 }
+
 
 
 
