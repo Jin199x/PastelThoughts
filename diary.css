@@ -554,6 +554,12 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 }
 
+#dailyThoughtEl {
+  color: #d94f87; 
+  font-weight: 600;
+  font-style: italic;
+}
+
 
 
 
