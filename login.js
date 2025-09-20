@@ -109,19 +109,21 @@ forgotForm.addEventListener('submit', e => {
 let deferredPrompt;
 const installBtn = document.getElementById("installPWA");
 
+// Listen for Chrome/Android install prompt
 window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault(); // prevent Chrome from showing its mini-infobar
-  deferredPrompt = e;
-  installBtn.style.display = "block"; // show the button
+  e.preventDefault();         // Stop Chrome from showing the default prompt
+  deferredPrompt = e;         // Save the event
+  installBtn.style.display = "block"; // Show your button
 });
 
+// When user clicks your button
 installBtn.addEventListener("click", async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt(); // show the install prompt
+  installBtn.style.display = "none";  // Hide the button
+  if (!deferredPrompt) return;         // No prompt available
+  deferredPrompt.prompt();             // Show the install prompt
   const choice = await deferredPrompt.userChoice;
-  console.log("User choice:", choice.outcome);
-  deferredPrompt = null;
-  installBtn.style.display = "none"; // hide button after prompt
+  console.log("User choice:", choice.outcome); // accepted / dismissed
+  deferredPrompt = null;               // Reset
 });
 
 
