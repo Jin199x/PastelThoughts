@@ -2,22 +2,24 @@
   "name": "PastelThoughts",
   "short_name": "PastelThoughts",
   "start_url": "index.html",
+  "scope": "./"
   "display": "standalone",
   "background_color": "#ffe6f0",
   "theme_color": "#d94f87",
   "icons": [
     {
-      "src": "icons/icon.png",
+      "src": "icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ]
 }
+
 
 
 
