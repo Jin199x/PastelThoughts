@@ -118,13 +118,18 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
 // When user clicks the button
 installBtn.addEventListener("click", async () => {
-  installBtn.style.display = "none";  // Hide button after click
-  if (!deferredPrompt) return;         // No prompt available
-  deferredPrompt.prompt();             // Show the install prompt
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
   const choice = await deferredPrompt.userChoice;
-  console.log("User choice:", choice.outcome); // accepted / dismissed
-  deferredPrompt = null;               // Reset
+  if (choice.outcome === "accepted") {
+    installBtn.style.display = "none"; // only hide if installed
+  } else {
+    installBtn.style.display = "block"; // keep showing if dismissed
+  }
+  deferredPrompt = null;
 });
+
+
 
 
 
