@@ -400,6 +400,76 @@ onAuthStateChanged(auth, async (user) => {
   renderExportList();
 });
 
+// ===== Install Prompt (Chrome/Android) =====
+let deferredPrompt;
+const installBtn = document.createElement('button');
+installBtn.id = 'installBtn';
+installBtn.textContent = 'Install App';
+Object.assign(installBtn.style, {
+  position: 'fixed',
+  bottom: '20px',
+  right: '20px',
+  padding: '10px 20px',
+  background: '#d94f87',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '8px',
+  display: 'none',
+  zIndex: 9999,
+  cursor: 'pointer'
+});
+document.body.appendChild(installBtn);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display = 'none';
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  console.log('User choice:', choice.outcome);
+  deferredPrompt = null;
+});
+
+// ===== iOS Support =====
+function isIos() {
+  return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+}
+
+function isInStandaloneMode() {
+  return ('standalone' in window.navigator) && window.navigator.standalone;
+}
+
+if (isIos() && !isInStandaloneMode()) {
+  const iosMsg = document.createElement('div');
+  iosMsg.innerHTML = `
+    Tap <span style="font-weight:bold;">Share</span> → 
+    <span style="font-weight:bold;">Add to Home Screen</span> to install the app.
+    <span id="closeIosMsg" style="margin-left:10px;cursor:pointer;font-weight:bold;">✕</span>
+  `;
+  Object.assign(iosMsg.style, {
+    position: 'fixed',
+    bottom: '0',
+    width: '100%',
+    padding: '10px',
+    background: '#d94f87',
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: '14px',
+    zIndex: 9999,
+    boxSizing: 'border-box'
+  });
+  document.body.appendChild(iosMsg);
+
+  document.getElementById('closeIosMsg').addEventListener('click', () => {
+    iosMsg.style.display = 'none';
+  });
+}
+
 
 const loadingScreen = document.getElementById("loadingScreen");
 const appContent = document.getElementById("appContent");
@@ -413,6 +483,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
