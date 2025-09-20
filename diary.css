@@ -76,7 +76,7 @@ html, body {
 }
 
 #logoutBtnMobile {
-  display: none; /* hidden by default */
+  display: none !important; /* hidden by default */
 }
 
 #logoutBtn {
@@ -599,4 +599,5 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   font-style: italic;
   font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
 }
+
 
