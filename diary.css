@@ -11,12 +11,23 @@ body {
   color: #333;
 }
 
+/* ====== iOS Safari Scroll / Bounce Fix ====== */
+html, body {
+  height: 100%;
+  overscroll-behavior-y: contain; /* prevent rubber band bounce */
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+}
+
 /* ====== Container ====== */
-.container { display: flex;
-            height: 100vh;
-            overflow: hidden; 
-            transition: all 0.3s ease;
-           }
+.container { 
+  display: flex;
+  height: 100vh;
+  overflow-y: auto; /* allow scroll inside container */
+  overflow-x: hidden; /* prevent horizontal scroll */
+  transition: all 0.3s ease;
+  -webkit-overflow-scrolling: touch; /* smooth iOS scroll */
+}
 
 /* ====== Sidebar ====== */
 .sidebar {
@@ -528,6 +539,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     min-width: 100vw; /* keep container full width without clipping */
   }
 }
+
 
 
 
