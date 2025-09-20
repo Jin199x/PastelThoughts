@@ -106,11 +106,11 @@ forgotForm.addEventListener('submit', e => {
     .catch(error => alert(error.message));
 });
 
-//install button
+// ===== Install Button (Chrome/Android) =====
 let deferredPrompt;
 const installBtn = document.getElementById("installPWA");
 
-// --- Check if app is already installed ---
+// Check if app is already installed
 function isInstalled() {
   // Chrome/Android
   if (window.matchMedia('(display-mode: standalone)').matches) return true;
@@ -119,20 +119,20 @@ function isInstalled() {
   return false;
 }
 
-// Hide the button if already installed
+// Hide the install button if app is already installed
 if (isInstalled()) {
   installBtn.style.display = "none";
 }
 
-// Only show button when PWA can be installed
+// Show the install button when PWA can be installed
 window.addEventListener("beforeinstallprompt", (e) => {
   if (isInstalled()) return; // app already installed
-  e.preventDefault();          
-  deferredPrompt = e;          
-  installBtn.style.display = "block"; 
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "block";
 });
 
-// When user clicks the button
+// Handle install button click
 installBtn.addEventListener("click", async () => {
   if (isInstalled()) {
     alert("You already have the PastelThoughts app installed on your device!");
@@ -144,15 +144,49 @@ installBtn.addEventListener("click", async () => {
   const choice = await deferredPrompt.userChoice;
 
   if (choice.outcome === "accepted") {
-    installBtn.style.display = "none"; 
+    installBtn.style.display = "none";
     alert("App installed successfully!");
   } else {
-    installBtn.style.display = "block"; 
+    installBtn.style.display = "block";
   }
   deferredPrompt = null;
 });
 
+// ===== iOS Add-to-Home-Screen Hint =====
+function isIos() {
+  return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+}
 
+function isInStandaloneMode() {
+  return ('standalone' in window.navigator) && window.navigator.standalone;
+}
+
+// Show iOS hint only if on iOS and app not installed
+if (isIos() && !isInstalled()) {
+  const iosMsg = document.createElement('div');
+  iosMsg.innerHTML = `
+    Tap <span style="font-weight:bold;">Share</span> → 
+    <span style="font-weight:bold;">Add to Home Screen</span> to install the app.
+    <span id="closeIosMsg" style="margin-left:10px;cursor:pointer;font-weight:bold;">✕</span>
+  `;
+  Object.assign(iosMsg.style, {
+    position: 'fixed',
+    bottom: '0',
+    width: '100%',
+    padding: '10px',
+    background: '#d94f87',
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: '14px',
+    zIndex: 9999,
+    boxSizing: 'border-box'
+  });
+  document.body.appendChild(iosMsg);
+
+  document.getElementById('closeIosMsg').addEventListener('click', () => {
+    iosMsg.style.display = 'none';
+  });
+}
 
 
 
