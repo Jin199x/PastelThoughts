@@ -69,10 +69,16 @@ loginForm.addEventListener('submit', e => {
   signInWithEmailAndPassword(auth, email, password)
     .then(userCredential => {
       console.log('Logged in user:', userCredential.user.uid);
+
+      // Save login timestamp for 30-min auto-login
+      const now = Date.now();
+      localStorage.setItem("loginTime", now);
+
       window.location.href = 'diary.html';
     })
     .catch(error => alert(error.message));
 });
+
 
 // --- Firebase Signup ---
 signupForm.addEventListener('submit', e => {
@@ -99,4 +105,5 @@ forgotForm.addEventListener('submit', e => {
     .then(() => alert('Password reset email sent!'))
     .catch(error => alert(error.message));
 });
+
 
