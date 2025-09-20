@@ -33,6 +33,7 @@ const todayBtn = document.getElementById("todayBtn");
 const logoutBtn = document.getElementById('logoutBtn');
 const prevMonthBtn = document.getElementById("prevMonth");
 const nextMonthBtn = document.getElementById("nextMonth");
+const logoutBtnMobile = document.getElementById('logoutBtnMobile');
 
 let currentDate = new Date();
 let currentUser = null;
@@ -335,7 +336,6 @@ logoutBtn.onclick = async () => {
 };
 
 // Mobile logout (add this)
-const logoutBtnMobile = document.getElementById('logoutBtnMobile');
 if (logoutBtnMobile) {
   logoutBtnMobile.onclick = async () => {
     await signOut(auth);
@@ -433,6 +433,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
