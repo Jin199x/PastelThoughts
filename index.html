@@ -67,20 +67,7 @@
       </div>
     </div>
   </div>
-
-  <script type="module" src="login.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("SW registered for login page!"))
-        .catch(err => console.log("SW registration failed:", err));
-    }
-
-    // Optional: Add click hint for iOS users
-    document.getElementById('installPWA').addEventListener('click', () => {
-      alert('On iOS: Tap Share → Add to Home Screen. On Chrome/Android: follow the browser prompt.');
-    });
-  </script>
+  
   <div id="toast" style="
     position: fixed;
     bottom: 20px;
@@ -94,6 +81,20 @@
     font-weight: bold;
     z-index: 9999;
 "></div>
+  
+  <script type="module" src="login.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("SW registered for login page!"))
+        .catch(err => console.log("SW registration failed:", err));
+    }
+    // Optional: Add click hint for iOS users
+    document.getElementById('installPWA').addEventListener('click', () => {
+      alert('On iOS: Tap Share → Add to Home Screen. On Chrome/Android: follow the browser prompt.');
+    });
+  </script>
 </body>
 </html>
+
 
