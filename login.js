@@ -106,15 +106,22 @@ forgotForm.addEventListener('submit', e => {
     .catch(error => alert(error.message));
 });
 
-// toast function
+// Improved toast function with fade
 function showToast(message, duration = 3000) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.style.display = 'block';
+    toast.style.opacity = '1';
+    toast.style.transition = 'opacity 0.3s ease';
+
     setTimeout(() => {
-        toast.style.display = 'none';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 300); // matches the transition duration
     }, duration);
 }
+
 
 
 //install button
@@ -162,6 +169,7 @@ installBtn.addEventListener("click", async () => {
   }
   deferredPrompt = null;
 });
+
 
 
 
