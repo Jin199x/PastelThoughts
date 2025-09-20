@@ -105,5 +105,23 @@ forgotForm.addEventListener('submit', e => {
     .then(() => alert('Password reset email sent!'))
     .catch(error => alert(error.message));
 });
+//install button
+let deferredPrompt;
+const installBtn = document.getElementById("installPWA");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault(); // prevent Chrome from showing its mini-infobar
+  deferredPrompt = e;
+  installBtn.style.display = "block"; // show the button
+});
+
+installBtn.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt(); // show the install prompt
+  const choice = await deferredPrompt.userChoice;
+  console.log("User choice:", choice.outcome);
+  deferredPrompt = null;
+  installBtn.style.display = "none"; // hide button after prompt
+});
 
 
