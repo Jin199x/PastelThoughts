@@ -12,7 +12,7 @@ const firebaseConfig = {
   authDomain: "pastelthoughts-19dd4.firebaseapp.com",
   projectId: "pastelthoughts-19dd4",
   messagingSenderId: "578642737437",
-  appId: "pastelthoughts-19dd4.web.app" 
+  appId: "1:578642737437:web:0a7e058cb42a9e340709f4" 
 };
 
 const app = initializeApp(firebaseConfig);
@@ -451,4 +451,5 @@ onAuthStateChanged(auth, async (user) => {
   listenForEntries();           // sets up real-time listener
   renderExportList();           // renders entries
 });
+
 
