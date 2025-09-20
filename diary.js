@@ -364,6 +364,30 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 
+// ===== Load saved theme on diary page =====
+async function loadTheme() {
+  if (!window.currentUser) return;
+  const userRef = doc(db, "users", window.currentUser.uid);
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    const data = snap.data();
+    if (data.theme) document.body.classList.add(data.theme);
+  }
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return window.location.href = 'index.html';
+  window.currentUser = user;
+
+  // call theme loader for diary page
+  await loadTheme();
+
+  // existing diary setup calls
+  renderPastEntries();
+  renderCalendar(currentDate);
+  renderExportList();
+});
+
 
 const loadingScreen = document.getElementById("loadingScreen");
 const appContent = document.getElementById("appContent");
@@ -377,6 +401,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
