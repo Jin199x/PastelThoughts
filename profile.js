@@ -344,7 +344,7 @@ async function updateDailyThought() {
     await setDoc(userRef, { dailyThought: { date: todayKey, text: dailyThought } }, { merge: true });
   }
 
-  if (dailyThoughtEl) dailyThoughtEl.textContent = dailyThought;
+  if (dailyThoughtEl) dailyThoughtEl.textContent = `"${dailyThought}"`;
 
   // update total entries
   const total = Object.keys(window.entries || {}).length;
@@ -451,5 +451,6 @@ onAuthStateChanged(auth, async (user) => {
   listenForEntries();           // sets up real-time listener
   renderExportList();           // renders entries
 });
+
 
 
