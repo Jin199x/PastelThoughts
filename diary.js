@@ -37,16 +37,26 @@ const nextMonthBtn = document.getElementById("nextMonth");
 let currentDate = new Date();
 let currentUser = null;
 
-// Check 30-minute session
-const loginTime = localStorage.getItem("loginTime");
+// ====== 30-minute session check on page load ======
 const thirtyMinutes = 30 * 60 * 1000;
+const loginTime = localStorage.getItem("loginTime");
 
 if (!loginTime || Date.now() - loginTime > thirtyMinutes) {
   localStorage.removeItem("loginTime");
   auth.signOut().then(() => {
-    window.location.href = "index.html"; // back to login
+    window.location.href = "index.html";
+  });
+} else {
+  // Reset loginTime on any user activity
+  function resetLoginTime() {
+    localStorage.setItem("loginTime", Date.now());
+  }
+
+  ['click', 'keydown', 'mousemove', 'scroll'].forEach(event => {
+    window.addEventListener(event, resetLoginTime);
   });
 }
+
 
 
 // ====== Firebase Auth Listener ======
@@ -483,6 +493,7 @@ function hideLoading() {
   loadingScreen.style.display = "none";
   appContent.style.display = "block";
 }
+
 
 
 
