@@ -76,13 +76,14 @@ html, body {
 }
 
 /* ====== Main Content ====== */
-.main-content { flex: 1; 
-               display: flex; 
-               flex-direction: column; 
-               padding: 30px; 
-               gap: 30px; 
-               overflow-y: auto; 
-              }
+.main-content { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  padding: 30px; 
+  gap: 30px; 
+  overflow-y: auto; 
+}
 
 /* ====== Editor ====== */
 .editor {
@@ -249,9 +250,30 @@ html, body {
   }
 }
 
-/* Default: hide mobile logout button */
+/* ====== Logout Buttons ====== */
+/* Default: desktop */
 #logoutBtnMobile {
   display: none;
+}
+#logoutBtn {
+  display: block;
+}
+
+/* Mobile view */
+@media (max-width: 992px) {
+  #logoutBtnMobile {
+    display: inline-block;  /* visible on mobile */
+    flex: none;
+    width: auto;
+    align-self: flex-start;
+    padding: 10px 16px;
+    font-size: 14px;
+    margin-top: 30px;
+  }
+
+  #logoutBtn {
+    display: none; /* hide desktop logout on mobile */
+  }
 }
 
 /* ====== Calendar Section ====== */
@@ -326,7 +348,6 @@ html, body {
   pointer-events: none; /* block clicks */
 }
 
-
 /* ====== Profile Section ====== */
 .profile {
   display: none;
@@ -391,26 +412,6 @@ body.theme-lavender .editor textarea,
 body.theme-lavender .full-entry,
 body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6); }
 
-/* ====== Calendar Section ====== */
-.calendar {
-  display: none;
-  flex-direction: column;
-  gap: 20px;
-  animation: fadeIn 0.3s ease;
-}
-
-/* Calendar navigation buttons, grid, etc. */
-
-/* Calendar entry card and textarea font */
-#calendarEntry,
-#calendarEntry p,
-#calendarEntry textarea,
-#calendarEntry #calendarEntryText {
-  font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
-  color: #5a2a3d;
-  font-weight: 600;
-}
-
 /* ====== Responsiveness ===== */
 @media (max-width: 992px) {
   body, .editor textarea, .full-entry, .timeline .entry-card, #calendarGrid .calendar-cell, #calendarEntry textarea {
@@ -437,7 +438,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     justify-content: space-between;
     flex-wrap: wrap;
   }
-  
+
   .sidebar nav button {
     flex: 1 1 calc(33.333% - 8px); /* 3 buttons per row with gaps */
     max-width: none;
@@ -465,7 +466,6 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     width: 100%;
     gap: 8px;
     justify-content: space-between;
-    flex-wrap: wrap;
   }
 
   .sidebar nav button {
@@ -541,10 +541,51 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
     height: 120px;
     font-size: 14px;
   }
+
+  /* Mobile adjustments for Export + Logout buttons */
+  .profile-section {
+    padding: 15px; /* optional smaller padding for mobile */
+  }
+
+  .profile-section #toggleSelectBtn {
+    padding: 5px 10px;      
+    font-size: 12px;        
+    width: auto;            
+    float: right;           
+    margin-top: -30px;      
+  }
+
+  .profile-section #searchExport {
+    width: calc(100% - 90px);
+    margin-bottom: 10px;
+  }
+
+  .profile-section #exportBtn {
+    width: auto;            
+    padding: 10px 16px;     
+    margin-top: 5px;
+  }
+
+  .profile-section #logoutBtnMobile {
+    display: inline-block;
+    flex: none;
+    width: auto;
+    align-self: flex-start;
+    padding: 10px 16px;
+    font-size: 14px;
+    margin-top: 30px;
+  }
+
+  #logoutBtn {
+    display: none;
+  }
 }
+
+/* Sidebar transition */
 .sidebar {
   transition: transform 0.3s ease;
 }
+
 /* ====== iOS Safari Horizontal Scroll Fix ONLY ===== */
 @supports (-webkit-overflow-scrolling: touch) {
   html, body {
@@ -555,81 +596,9 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   }
 }
 
-#logoutBtnMobile {
-  display: none;
-}
-
-@media (max-width: 992px) {
-  #logoutBtnMobile {
-    display: block;
-  }
-  /* Hide the sidebar logout button on mobile */
-  #logoutBtn {
-    display: none;
-  }
-}
-
 #dailyThoughtEl {
   color: #d94f87; 
   font-weight: 600;
   font-style: italic;
   font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
 }
-
-/* ===== Mobile adjustments for Export + Logout buttons ===== */
-@media (max-width: 600px) {
-  /* Keep profile section layout intact */
-  .profile-section {
-    padding: 15px; /* optional smaller padding for mobile */
-  }
-
-  /* Export controls (Select All + Search) */
-  .profile-section #toggleSelectBtn {
-    padding: 5px 10px;      /* smaller than Export button */
-    font-size: 12px;        /* smaller text */
-    width: auto;            /* do not stretch full width */
-    float: right;           /* stay on the right side */
-    margin-top: -30px;      /* adjust vertical alignment if needed */
-  }
-
-  .profile-section #searchExport {
-    width: calc(100% - 90px); /* leave space for Select All button */
-    margin-bottom: 10px;
-  }
-
-  /* Export button */
-  .profile-section #exportBtn {
-    width: auto;            /* prevent full width */
-    padding: 10px 16px;     /* keep it bigger than Select All */
-    margin-top: 5px;
-  }
-
-  /* Logout button */
- .profile-section #logoutBtnMobile {
-  display: block;        /* already there */
-  flex: none;            /* prevent flex grow/shrink */
-  width: auto;           /* natural width */
-  align-self: flex-start;/* prevent stretching across row */
-  padding: 10px 16px;
-  font-size: 14px;
-  margin-top: 30px;
-}
-  
-  /* Hide the desktop logout button */
-  #logoutBtn {
-    display: none;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
