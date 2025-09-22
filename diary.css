@@ -14,23 +14,24 @@ body {
 /* ====== iOS Safari Scroll / Bounce Fix ====== */
 html, body {
   height: 100%;
-  width: 100%;          
+  width: 100%;
   overscroll-behavior-y: contain;
-  overflow-y: scroll;
-  overflow-x: hidden !important; 
+  overflow-x: hidden !important;
+  overflow-y: auto;  /* was 'scroll' → forces ghost scroll */
   -webkit-overflow-scrolling: touch;
 }
 
 
+
 /* ====== Container ====== */
-.container { 
+.container {
   display: flex;
-  height: 100vh;
-  max-width: 100vw;   
+  min-height: 100vh;   /* safer than fixed height */
+  max-width: 100vw;
   overflow-y: auto;
-  overflow-x: hidden !important; 
-  transition: all 0.3s ease;
+  overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch;
+  transition: all 0.3s ease;  /* ✅ restored */
 }
 
 /* ====== Sidebar ====== */
@@ -89,13 +90,13 @@ html, body {
 
 
 /* ====== Main Content ====== */
-.main-content { 
-  flex: 1; 
-  display: flex; 
-  flex-direction: column; 
-  padding: 30px; 
-  gap: 30px; 
-  overflow-y: auto; 
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  gap: 30px;
+  overflow-y: visible; /* let timeline control its own scroll */
 }
 
 /* ====== Editor ====== */
@@ -605,6 +606,7 @@ body.theme-lavender .timeline .entry-card { background: rgba(243, 230, 255, 0.6)
   font-style: italic;
   font-family: 'Patrick Hand', 'Comic Sans MS', cursive;
 }
+
 
 
 
