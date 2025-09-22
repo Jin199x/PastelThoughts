@@ -1,5 +1,5 @@
 {
-  "name": "PastelThoughts",
+  "name": "Pastel Thoughts",
   "short_name": "Pastel Thoughts",
   "start_url": "./index.html",
   "scope": "./",
@@ -19,4 +19,5 @@
     }
   ]
 }
+
 
