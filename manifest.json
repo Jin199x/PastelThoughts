@@ -1,6 +1,6 @@
 {
   "name": "PastelThoughts",
-  "short_name": "PastelThoughts",
+  "short_name": "Pastel Thoughts",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -19,3 +19,4 @@
     }
   ]
 }
+
